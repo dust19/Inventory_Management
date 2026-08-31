@@ -1,0 +1,49 @@
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.disabled-action:disabled {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btns {
+    display: flex;
+    gap: 4px;
+}
+
+.row-id {
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.select-head {
+    font-weight: 700;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.text-success {
+    color: var(--success) !important;
+}
+
+.text-danger {
+    color: var(--danger) !important;
+}

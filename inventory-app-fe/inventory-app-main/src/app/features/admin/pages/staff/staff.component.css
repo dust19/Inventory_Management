@@ -1,0 +1,257 @@
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+/* ===== SALES MODAL ===== */
+
+.modal-lg {
+    width: min(1100px, 95vw);
+}
+
+.sales-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.sales-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sales-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sales-user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.sales-user-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.sales-user-email {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ===== FILTER BAR ===== */
+
+.sales-filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-pill {
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.filter-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-pill.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* ===== CUSTOM DATE ===== */
+
+.sales-date-range {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.sales-date-range .form-control {
+    width: 100%;
+}
+
+/* ===== SUMMARY CARDS ===== */
+
+.sales-summary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.summary-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.summary-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.summary-number {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+/* ===== TABLE ===== */
+
+.sales-table-wrapper {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.sales-table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.sales-table-wrapper thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.sales-table-wrapper th {
+    background: var(--bg-body);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.sales-table-wrapper td {
+    padding: 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.sales-table-wrapper tbody tr {
+    transition: background .15s ease;
+}
+
+.sales-table-wrapper tbody tr:hover {
+    background: var(--bg-body);
+}
+
+/* ===== CUSTOMER ===== */
+
+.customer-block {
+    display: flex;
+    flex-direction: column;
+}
+
+.customer-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.customer-phone {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ===== REVENUE ===== */
+
+.sale-amount {
+    font-weight: 700;
+    color: var(--success);
+}
+
+/* ===== EMPTY ===== */
+
+.sales-empty {
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.sales-empty i {
+    font-size: 42px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: block;
+}
+
+.sales-empty p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ===== MOBILE ===== */
+
+@media (max-width: 768px) {
+
+    .sales-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-date-range {
+        grid-template-columns: 1fr;
+    }
+
+    .sales-filter-bar {
+        flex-direction: column;
+    }
+
+    .filter-pill {
+        width: 100%;
+        text-align: center;
+    }
+
+    .sales-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .sales-table-wrapper table {
+        min-width: 750px;
+    }
+}

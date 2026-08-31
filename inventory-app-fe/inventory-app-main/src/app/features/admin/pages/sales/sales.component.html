@@ -1,0 +1,216 @@
+<div class="page-enter" @fadeIn>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Sales Orders</h4>
+      <p>View customer sales and payment details</p>
+    </div>
+
+    <div class="page-header-right">
+      <button class="btn btn-primary" (click)="openCreateSale()">
+        <i class="bi bi-cart-plus"></i> New Sale
+      </button>
+    </div>
+  </div>
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+  @if (loading()) {
+
+  <app-loader />
+
+  } @else {
+
+  <div>
+
+    <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+      [searchPlaceholder]="'Search sales...'" (search)="search = $event; applyFilter()" [showFilter]="true"
+      [filterValue]="selectedPaymentMode" [filterPlaceholder]="'Filter by Payment'"
+      [filterOptions]="paymentModeFilterOptions" (filter)="selectedPaymentMode = $event; applyFilter()"
+      [showSort]="true" [sortValue]="selectedSort" [sortPlaceholder]="'Sort By'" [sortOptions]="sortOptions"
+      (sort)="selectedSort = $event; applyFilter()">
+      <ng-template #header>
+        <tr>
+          <th>#</th>
+          <th>Sold By</th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #empty>
+        <div class="empty-state">
+          <i class="bi bi-receipt"></i>
+          <p>No sales found</p>
+        </div>
+      </ng-template>
+
+      <ng-template #body>
+        @for (s of paged.items; track s.id) {
+
+        <tr>
+
+          <td>
+            <strong>#{{ s.id }}</strong>
+          </td>
+
+          <td>
+            <div class="user-name">{{ s.soldByName || ('User #' + s.soldById) }}</div>
+
+            <span class="role-badge" [ngClass]="{
+        'admin': s.soldByRole === 'ROLE_ADMIN',
+        'manager': s.soldByRole === 'ROLE_MANAGER',
+        'staff': s.soldByRole === 'ROLE_STAFF'
+      }">
+              {{ s.soldByRole.replace('ROLE_', '') | titlecase }}
+            </span>
+          </td>
+
+          <td>
+            <div class="customer-cell">
+              <div class="customer-name">
+                {{ s.customerName }}
+              </div>
+
+              <div class="customer-phone">
+                {{ s.customerPhone }}
+              </div>
+            </div>
+          </td>
+
+          <td>
+            {{ s.items.length }} item(s)
+          </td>
+
+          <td>
+            <strong>
+              {{ s.totalAmount | number:'1.2-2' }}
+            </strong>
+          </td>
+
+          <td>
+            <span class="badge {{ paymentModeBadge(s.paymentMode) }}">
+              {{ s.paymentMode }}
+            </span>
+          </td>
+
+          <td>
+            {{ s.saleDate | date:'MMM d, y' }}
+          </td>
+
+          <td>
+            <button class="btn btn-sm btn-outline-secondary" (click)="openDetails(s)">
+              <i class="bi bi-eye"></i> View
+            </button>
+
+          </td>
+
+        </tr>
+
+        }
+      </ng-template>
+    </app-table>
+    <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+      [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+    </app-paginator>
+
+  </div>
+
+  }
+
+</div>
+
+@if (detailItem()) {
+
+<div class="modal-overlay" (click)="closeDetails()">
+
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <h5 class="modal-title">
+        Sale #{{ detailItem()!.id }}
+      </h5>
+
+      <button class="modal-close" (click)="closeDetails()">
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-body">
+
+      <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:16px;
+          ">
+
+        <span>
+          Payment:
+          <span class="badge {{ paymentModeBadge(detailItem()!.paymentMode) }}">
+            {{ detailItem()!.paymentMode }}
+          </span>
+        </span>
+
+        <span>
+          Total:
+          <strong>
+            ₹{{ detailItem()!.totalAmount | number:'1.2-2' }}
+          </strong>
+        </span>
+
+      </div>
+
+      <div class="table-wrap">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            @for (item of detailItem()!.items; track item.id) {
+
+            <tr>
+
+              <td>{{ item.productName }}</td>
+
+              <td>{{ item.quantity }}</td>
+
+              <td>
+                ₹{{ item.price | number:'1.2-2' }}
+              </td>
+
+              <td>
+                ₹{{ item.subtotal | number:'1.2-2' }}
+              </td>
+
+            </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+}

@@ -1,0 +1,325 @@
+@if (loading()) {
+
+<div class="loader-wrap">
+    <div class="spinner"></div>
+</div>
+
+} @else if (user()) {
+
+<div class="profile-page page-enter">
+
+    <!-- PROFILE SUMMARY -->
+
+    <div class="profile-summary">
+
+        <div class="profile-summary-content">
+
+            <div class="profile-left">
+
+                <div class="profile-avatar">
+                    {{ getInitials(user()!.name) }}
+                </div>
+
+                <div class="profile-details">
+
+                    <h2>{{ user()!.name }}</h2>
+
+                    <div class="profile-email">
+                        {{ user()!.email }}
+                    </div>
+
+                    <div class="profile-meta">
+
+                        <div class="meta-pill">
+                            <i class="bi bi-shield-check"></i>
+                            {{ roleLabel(user()!.role) }}
+                        </div>
+
+                        <div class="meta-pill">
+                            <i class="bi bi-telephone"></i>
+                            {{ user()!.phone || 'No phone added' }}
+                        </div>
+
+                        <div class="meta-pill">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ user()!.address || 'No address added' }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="profile-actions">
+
+                <button class="btn btn-light" (click)="openEditModal()">
+
+                    <i class="bi bi-pencil-square"></i>
+                    Edit Profile
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CONTENT -->
+
+    <div class="profile-content">
+
+        <!-- LEFT CARD -->
+
+        <div class="settings-card">
+
+            <div class="settings-header">
+
+                <h3 class="settings-title">
+                    Profile Information
+                </h3>
+
+                <div class="settings-subtitle">
+                    Your personal and account details
+                </div>
+
+            </div>
+
+            <div class="settings-body">
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+
+                        <label>Full Name</label>
+
+                        <div class="info-box">
+                            {{ user()!.name }}
+                        </div>
+
+                    </div>
+
+                    <div class="info-item">
+
+                        <label>Email Address</label>
+
+                        <div class="info-box">
+                            {{ user()!.email }}
+                        </div>
+
+                    </div>
+
+                    <div class="info-item">
+
+                        <label>Phone Number</label>
+
+                        <div class="info-box">
+                            {{ user()!.phone || 'Not Added' }}
+                        </div>
+
+                    </div>
+
+                    <div class="info-item">
+
+                        <label>Role</label>
+
+                        <div class="info-box">
+                            {{ roleLabel(user()!.role) }}
+                        </div>
+
+                    </div>
+
+                    <div class="info-item full-span">
+
+                        <label>Address</label>
+
+                        <div class="info-box">
+                            {{ user()!.address || 'Not Added' }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- SECURITY CARD -->
+
+        <div class="settings-card">
+
+            <div class="settings-header">
+
+                <h3 class="settings-title">
+                    Security
+                </h3>
+
+                <div class="settings-subtitle">
+                    Update your account password
+                </div>
+
+            </div>
+
+            <div class="settings-body">
+
+                @if (pwError) {
+
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    {{ pwError }}
+                </div>
+
+                }
+
+                <div class="password-form">
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Current Password
+                        </label>
+
+                        <input type="password" class="form-control" [(ngModel)]="pwForm.oldPassword"
+                            placeholder="Enter current password">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            New Password
+                        </label>
+
+                        <input type="password" class="form-control" [(ngModel)]="pwForm.newPassword"
+                            placeholder="Enter new password">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label class="form-label">
+                            Confirm Password
+                        </label>
+
+                        <input type="password" class="form-control" [(ngModel)]="pwForm.confirmPassword"
+                            placeholder="Confirm new password">
+
+                    </div>
+
+                    <button class="btn btn-primary password-btn" [disabled]="pwSaving()" (click)="changePassword()">
+
+                        @if (pwSaving()) {
+
+                        <span class="spinner-sm"></span>
+                        Updating...
+
+                        } @else {
+
+                        <i class="bi bi-lock-fill"></i>
+                        Update Password
+
+                        }
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+
+@if (showEditModal()) {
+
+<div class="modal-overlay">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+
+            <div>
+
+                <h3 class="modal-title">
+                    Update Profile
+                </h3>
+
+                <div class="settings-subtitle">
+                    Modify your profile information
+                </div>
+
+            </div>
+
+            <button class="modal-close" (click)="closeEditModal()">
+
+                <i class="bi bi-x-lg"></i>
+
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <div class="form-group">
+
+                <label class="form-label">
+                    Full Name
+                </label>
+
+                <input type="text" class="form-control" [(ngModel)]="editForm.name" placeholder="Enter full name">
+
+            </div>
+
+            <div class="form-group">
+
+                <label class="form-label">
+                    Phone Number
+                </label>
+
+                <input type="text" class="form-control" [(ngModel)]="editForm.phone" placeholder="Enter phone number">
+
+            </div>
+
+            <div class="form-group">
+
+                <label class="form-label">
+                    Address
+                </label>
+
+                <textarea rows="4" class="form-control" [(ngModel)]="editForm.address"
+                    placeholder="Enter address"></textarea>
+
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn btn-outline-secondary" (click)="closeEditModal()">
+
+                Cancel
+
+            </button>
+
+            <button class="btn btn-primary" (click)="updateProfile()">
+
+                <i class="bi bi-check2-circle"></i>
+                Save Changes
+
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+}
+
+}

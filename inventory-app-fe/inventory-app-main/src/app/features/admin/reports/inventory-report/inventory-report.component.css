@@ -1,0 +1,225 @@
+.mb-24 {
+    margin-bottom: 18px;
+}
+
+.me-2 {
+    margin-right: 6px;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.text-success {
+    color: var(--success) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* ── TOOLBAR ──────────────────────────────── */
+.manager-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+}
+
+.toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+}
+
+.toolbar-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.toolbar-title i {
+    color: var(--primary);
+}
+
+.preset-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-chip.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.showing-label {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* ── CHARTS GRID ──────────────────────────── */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 18px;
+    align-items: start;
+    margin-bottom: 18px;
+}
+
+/* ── BAR CHART ────────────────────────────── */
+.chart-wrap {
+    width: 100%;
+    position: relative;
+    height: 260px;
+    /* explicit height */
+}
+
+/* ── DONUT CHART ──────────────────────────── */
+.donut-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 16px 16px;
+}
+
+.donut-wrap {
+    width: 100%;
+    position: relative;
+    height: 275px;
+}
+
+.donut-center {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.donut-total {
+    display: block;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.donut-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-top: 3px;
+    display: block;
+}
+
+/* ── TABLE ROW TINTS ──────────────────────── */
+.row-critical td {
+    background: rgba(231, 76, 60, 0.06) !important;
+}
+
+.row-low td {
+    background: rgba(243, 156, 18, 0.07) !important;
+}
+
+/* ── TOTAL ROW ────────────────────────────── */
+.total-row td {
+    background: var(--primary-light) !important;
+    font-weight: 700;
+}
+
+/* ── TABLE CELLS ──────────────────────────── */
+code {
+    background: var(--bg-soft, #f0f2f5);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.stock-number {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--success);
+}
+
+.stock-number.stock-zero {
+    color: var(--danger);
+}
+
+.stock-number.stock-low {
+    color: var(--warning);
+}
+
+.sold-qty {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ── BADGE OVERRIDES ──────────────────────── */
+.badge-muted {
+    background: rgba(150, 150, 150, 0.15);
+    color: var(--text-muted);
+}
+
+/* ── RESPONSIVE ───────────────────────────── */
+@media (max-width: 960px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .donut-wrap {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    .manager-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-right {
+        justify-content: flex-end;
+    }
+}

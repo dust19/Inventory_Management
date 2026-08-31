@@ -1,0 +1,56 @@
+/* styles */
+.compact-stats .stat-card {
+    padding: 14px 16px;
+    min-height: 90px;
+}
+
+.compact-stats .stat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+}
+
+.compact-stats .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    margin-top: 6px;
+}
+
+.compact-stats .stat-label {
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 4px;
+    padding: 3px 16px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+/* Admin */
+.role-badge.admin {
+    background: rgba(168, 85, 247, .15);
+    color: #a855f7;
+}
+
+/* Manager */
+.role-badge.manager {
+    background: rgba(14, 165, 233, .15);
+    color: #0ea5e9;
+}
+
+/* Staff */
+.role-badge.staff {
+    background: rgba(249, 115, 22, .15);
+    color: #f97316;
+}

@@ -1,0 +1,314 @@
+.mb-24 {
+    margin-bottom: 18px;
+}
+
+/* ── TOOLBAR ────────────────────── */
+.stock-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 360px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.search-box .form-control {
+    padding-left: 38px;
+    border-radius: 10px;
+}
+
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-chip.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+}
+
+.filter-chip.healthy.active {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+.filter-chip.low.active {
+    background: var(--warning);
+    border-color: var(--warning);
+}
+
+.filter-chip.out.active {
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+.chip-count {
+    background: rgba(0, 0, 0, .08);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+}
+
+.filter-chip.active .chip-count {
+    background: rgba(255, 255, 255, .25);
+}
+
+/* ── GAUGE LIST ────────────────── */
+.gauge-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.gauge-row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr) 120px 130px;
+    align-items: center;
+    gap: 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 20px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.gauge-row:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Radial ring */
+.gauge-ring {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+}
+
+.gauge-ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.ring-bg {
+    fill: none;
+    stroke: var(--border-light);
+    stroke-width: 6;
+}
+
+.ring-fill {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    transition: stroke-dashoffset .5s ease;
+}
+
+.gauge-ring.healthy .ring-fill {
+    stroke: var(--success);
+}
+
+.gauge-ring.low .ring-fill {
+    stroke: var(--warning);
+}
+
+.gauge-ring.out .ring-fill {
+    stroke: var(--danger);
+}
+
+.ring-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ring-value {
+    font-size: 15px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-primary);
+}
+
+/* Info + progress bar */
+.gauge-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.gauge-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.gauge-title-row h5 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gauge-title-row .sku {
+    flex-shrink: 0;
+}
+
+.gauge-bar-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border-light);
+    overflow: hidden;
+}
+
+.gauge-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .5s ease;
+}
+
+.gauge-bar-fill.healthy {
+    background: linear-gradient(90deg, #22c55e, var(--success));
+}
+
+.gauge-bar-fill.low {
+    background: linear-gradient(90deg, #fbbf24, var(--warning));
+}
+
+.gauge-bar-fill.out {
+    background: linear-gradient(90deg, #f87171, var(--danger));
+}
+
+/* Meta */
+.gauge-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.gauge-pct {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.gauge-pct-label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Status badge */
+.stock-status-badge {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    justify-self: end;
+}
+
+.stock-status-badge.healthy {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.stock-status-badge.low {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stock-status-badge.out {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+@media(max-width:768px) {
+    .stock-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        max-width: none;
+    }
+
+    .gauge-row {
+        grid-template-columns: 48px 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 10px 14px;
+    }
+
+    .gauge-ring {
+        width: 48px;
+        height: 48px;
+    }
+
+    .ring-value {
+        font-size: 12px;
+    }
+
+    .gauge-meta {
+        grid-column: 2;
+        align-items: flex-start;
+    }
+
+    .stock-status-badge {
+        grid-column: 1 / -1;
+        justify-self: start;
+    }
+}

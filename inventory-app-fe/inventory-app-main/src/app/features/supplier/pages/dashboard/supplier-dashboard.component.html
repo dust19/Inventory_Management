@@ -1,0 +1,92 @@
+<div class="page-enter" @fadeIn>
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Dashboard</h4>
+      <p>Welcome back, {{ auth.currentUser()?.name }}!</p>
+    </div>
+    <div class="page-header-right">
+      <a routerLink="/supplier/products" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> Add Product
+      </a>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <app-loader></app-loader>
+  } @else {
+
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+  <!-- Charts Row -->
+  <div class="grid-2 mb-24">
+
+    <!-- Stacked Bar: Monthly Order Value by Status -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="card-title">
+          <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Monthly Order Value
+        </h6>
+        <span class="badge badge-secondary">LAST 6 MONTHS</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas #barChart></canvas></div>
+      </div>
+    </div>
+
+    <!-- Donut: Top 5 Products by Stock -->
+    <div class="card">
+      <div class="card-header">
+        <h6 class="card-title">
+          <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Top 5 Products by Stock
+        </h6>
+        <span class="badge badge-secondary">PRODUCTS</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap"><canvas #donutChart></canvas></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Recent Orders Table -->
+  <div class="card">
+    <div class="card-header">
+      <h6 class="card-title">Recent Purchase Orders</h6>
+      <a routerLink="/supplier/orders" class="view-all">View all</a>
+    </div>
+    <app-table [hasData]="recentOrders().length > 0">
+      <ng-template #empty>
+        <div class="empty-state">
+          <i class="bi bi-cart-check"></i>
+          <p>No orders yet</p>
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>#</th>
+          <th>Items</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>confirmed At</th>
+        </tr>
+      </ng-template>
+      <ng-template #body>
+        @for (o of recentOrders(); track o.id) {
+        <tr>
+          <td><strong>#{{ o.id }}</strong></td>
+          <td>{{ o.items.length }} item{{ o.items.length !== 1 ? 's' : '' }}</td>
+          <td><strong>₹{{ o.totalAmount | number:'1.0-0' }}</strong></td>
+          <td>
+            <span class="badge {{ statusBadge(o.status) }}">{{ o.status }}</span>
+          </td>
+          <td>{{ (o.createdAt ?? o.confirmedAt) | date:'MMM d, y' }}</td>
+        </tr>
+        }
+      </ng-template>
+    </app-table>
+  </div>
+
+  }
+</div>

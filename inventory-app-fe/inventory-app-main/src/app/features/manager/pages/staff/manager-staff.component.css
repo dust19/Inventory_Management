@@ -1,0 +1,422 @@
+﻿/* ── ERROR NOTICE ──────────────────────────────────────────── */
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  color: var(--danger);
+}
+
+
+/* ── STAFF GRID ────────────────────────────────────────────── */
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.full-span {
+  grid-column: 1 / -1;
+}
+
+
+/* ── STAFF CARD ────────────────────────────────────────────── */
+.staff-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+  /* keeps accent bar flush to top */
+  transition: box-shadow .18s, transform .18s;
+}
+
+.staff-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Content sections all get the same horizontal padding. */
+.card-header,
+.card-identity,
+.card-metrics,
+.btn-view {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+
+/* ── COLOUR PALETTES ───────────────────────────────────────── */
+/*
+  Each palette exposes three tokens used by accent bar, avatar,
+  and the View Sales button tint:
+    --card-from  accent gradient start
+    --card-to    accent gradient end
+    --card-tint  semi-transparent tint (pill bg, button bg)
+    --card-text  readable text on tint
+*/
+
+.card--color-indigo {
+  --card-from: #6366f1;
+  --card-to: #818cf8;
+  --card-tint: rgba(99, 102, 241, 0.10);
+  --card-text: #4338ca;
+}
+
+.card--color-rose {
+  --card-from: #f43f5e;
+  --card-to: #fb7185;
+  --card-tint: rgba(244, 63, 94, 0.10);
+  --card-text: #be123c;
+}
+
+.card--color-amber {
+  --card-from: #f59e0b;
+  --card-to: #fbbf24;
+  --card-tint: rgba(245, 158, 11, 0.10);
+  --card-text: #b45309;
+}
+
+.card--color-teal {
+  --card-from: #14b8a6;
+  --card-to: #2dd4bf;
+  --card-tint: rgba(20, 184, 166, 0.10);
+  --card-text: #0f766e;
+}
+
+.card--color-violet {
+  --card-from: #8b5cf6;
+  --card-to: #a78bfa;
+  --card-tint: rgba(139, 92, 246, 0.10);
+  --card-text: #6d28d9;
+}
+
+
+/* ── ACCENT BAR ────────────────────────────────────────────── */
+.card-accent {
+  height: 3px;
+  background: linear-gradient(90deg, var(--card-from), var(--card-to));
+  flex-shrink: 0;
+}
+
+.staff-card--inactive .card-accent {
+  background: var(--border);
+}
+
+
+/* ── CARD HEADER ───────────────────────────────────────────── */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+}
+
+
+/* ── AVATAR ────────────────────────────────────────────────── */
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--card-from), var(--card-to));
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar--inactive {
+  background: var(--bg-subtle, #e8e8e8);
+  color: var(--text-muted);
+}
+
+.avatar--sm {
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+
+
+/* ── STATUS PILL ───────────────────────────────────────────── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-pill--active {
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  color: var(--success);
+}
+
+.status-pill--active .status-dot {
+  background: var(--success);
+}
+
+.status-pill--inactive {
+  background: color-mix(in srgb, var(--text-muted) 12%, transparent);
+  color: var(--text-muted);
+}
+
+.status-pill--inactive .status-dot {
+  background: var(--text-muted);
+}
+
+
+/* ── IDENTITY ──────────────────────────────────────────────── */
+.card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.staff-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0;
+}
+
+.staff-email {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+
+/* ── METRIC TILES ──────────────────────────────────────────── */
+.card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metric-tile {
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-muted);
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.1;
+}
+
+.metric-value--id {
+  font-size: 16px;
+}
+
+.loading-dots {
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+}
+
+
+/* ── VIEW SALES BUTTON ─────────────────────────────────────── */
+.btn-view {
+  margin: 0 20px 20px;
+  padding: 9px 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-body);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+
+.btn-view:hover {
+  background: var(--card-tint);
+  border-color: var(--card-from);
+  color: var(--card-text);
+}
+
+.btn-view--active {
+  background: var(--card-tint);
+  border-color: var(--card-from);
+  color: var(--card-text);
+}
+
+.btn-view--active:hover {
+  filter: brightness(0.95);
+}
+
+
+/* ── SALES POPUP ───────────────────────────────────────────── */
+.popup-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.popup-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+
+/* Range tabs */
+.range-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+}
+
+.range-tab {
+  flex: 1;
+  padding: 7px 12px;
+  border: none;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background .15s, color .15s;
+}
+
+.range-tab--active {
+  background: var(--bg-card);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.range-tab:hover:not(.range-tab--active) {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+
+/* Custom date inputs */
+.custom-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+
+/* Summary strip */
+.popup-summary {
+  display: flex;
+  align-items: center;
+  background: var(--bg-body);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-muted);
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.summary-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+  margin: 0 20px;
+  flex-shrink: 0;
+}
+
+
+/* Table */
+.customer-phone {
+  font-size: .75rem;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+
+/* ── RESPONSIVE ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .staff-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-range {
+    grid-template-columns: 1fr;
+  }
+
+  .range-tab i+* {
+    display: none;
+    /* icon only on small screens */
+  }
+
+  .popup-summary {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .summary-divider {
+    display: none;
+  }
+}

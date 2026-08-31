@@ -1,0 +1,26 @@
+.mb-24 {
+    margin-bottom: 18px;
+}
+
+.me-2 {
+    margin-right: 6px;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.total-row td {
+    background: var(--primary-light) !important;
+    font-weight: 700;
+}
+
+.chart-wrap {
+    width: 90%;
+    position: relative;
+    height: 200px;
+}

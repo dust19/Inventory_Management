@@ -1,0 +1,9 @@
+﻿.actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.spaced {
+    margin-top: 12px;
+}

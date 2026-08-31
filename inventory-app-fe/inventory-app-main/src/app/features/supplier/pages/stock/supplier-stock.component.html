@@ -1,0 +1,91 @@
+<div class="page-enter" @fadeIn>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Stock Overview</h4>
+      <p>Monitor your product stock levels</p>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <app-loader />
+  } @else {
+
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+  <div class="stock-toolbar mb-24">
+    <div class="search-box">
+      <i class="bi bi-search"></i>
+      <input type="text" class="form-control" placeholder="Search by name or SKU..." [ngModel]="search()"
+        (ngModelChange)="onSearch($event)">
+    </div>
+
+    <div class="filter-chips">
+      <button class="filter-chip" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+        <i class="bi bi-grid"></i> All <span class="chip-count">{{ products().length }}</span>
+      </button>
+      <button class="filter-chip healthy" [class.active]="activeFilter() === 'healthy'" (click)="setFilter('healthy')">
+        <i class="bi bi-check-circle-fill"></i> Healthy <span class="chip-count">{{ healthyCount() }}</span>
+      </button>
+      <button class="filter-chip low" [class.active]="activeFilter() === 'low'" (click)="setFilter('low')">
+        <i class="bi bi-exclamation-triangle-fill"></i> Low <span class="chip-count">{{ lowStockCount() }}</span>
+      </button>
+      <button class="filter-chip out" [class.active]="activeFilter() === 'out'" (click)="setFilter('out')">
+        <i class="bi bi-x-octagon-fill"></i> Out of Stock <span class="chip-count">{{ outOfStockCount() }}</span>
+      </button>
+    </div>
+  </div>
+
+  @if (paged.items.length === 0) {
+  <div class="empty-state">
+    <i class="bi bi-boxes"></i>
+    <p>No products found</p>
+  </div>
+  } @else {
+  <div class="gauge-list">
+    @for (p of paged.items; track p.id) {
+    <div class="gauge-row" [class]="stockStatus(p)">
+
+      <div class="gauge-ring" [class]="stockStatus(p)">
+        <svg viewBox="0 0 60 60">
+          <circle class="ring-bg" cx="30" cy="30" r="26"></circle>
+          <circle class="ring-fill" cx="30" cy="30" r="26" [attr.stroke-dasharray]="163.36"
+            [attr.stroke-dashoffset]="163.36 - (163.36 * stockPct(p) / 100)"></circle>
+        </svg>
+        <div class="ring-center">
+          <span class="ring-value">{{ p.availableStock }}</span>
+        </div>
+      </div>
+
+      <div class="gauge-info">
+        <div class="gauge-title-row">
+          <h5>{{ p.name }}</h5>
+          <code class="sku">{{ p.sku }}</code>
+        </div>
+        <div class="gauge-bar-track">
+          <div class="gauge-bar-fill" [class]="stockStatus(p)" [style.width]="stockPct(p) + '%'"></div>
+        </div>
+      </div>
+
+      <div class="gauge-meta">
+        <span class="gauge-pct">{{ stockPct(p) }}%</span>
+        <span class="gauge-pct-label">of max stock</span>
+      </div>
+
+      <span class="stock-status-badge" [class]="stockStatus(p)">
+        @switch (stockStatus(p)) {
+        @case ('healthy') { <i class="bi bi-check-circle-fill"></i> Healthy }
+        @case ('low') { <i class="bi bi-exclamation-triangle-fill"></i> Low Stock }
+        @case ('out') { <i class="bi bi-x-octagon-fill"></i> Out of Stock }
+        }
+      </span>
+    </div>
+    }
+  </div>
+
+  <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+    [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+  </app-paginator>
+  }
+
+  }
+</div>

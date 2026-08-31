@@ -1,0 +1,253 @@
+<div class="page-enter" @fadeIn>
+
+    <!-- ── PAGE HEADER ──────────────────────────────── -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <p class="greeting-eyebrow">{{ greeting() }},</p>
+            <h4>{{ auth.currentUser()?.name }}</h4>
+            <p>Team activity and operations — {{ today }}</p>
+        </div>
+        <div class="page-header-right">
+            <a routerLink="/manager/purchases" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-truck"></i> Confirm Purchases
+            </a>
+            <a routerLink="/admin/sales" class="btn btn-primary btn-sm">
+                <i class="bi bi-receipt"></i> View Sales
+            </a>
+        </div>
+    </div>
+
+    @if (loading()) {
+    <app-loader></app-loader>
+    } @else {
+
+    <!-- ── KPI STRIP ─────────────────────────────────── -->
+    <app-stat-strip [items]="managerStats()"></app-stat-strip>
+
+    <!-- ── PENDING ALERT BANNER ──────────────────────── -->
+    @if (pendingDeliveries().length > 0) {
+    <div class="alert-banner mb-24">
+        <div class="alert-banner-icon"><i class="bi bi-truck"></i></div>
+        <div class="alert-banner-body">
+            <strong>{{ pendingDeliveries().length }} delivered purchase{{ pendingDeliveries().length > 1 ? 's' : '' }}
+                awaiting your confirmation</strong>
+            <span>Review and confirm stock receipt to update inventory.</span>
+        </div>
+        <a routerLink="/manager/purchases" class="btn btn-warning btn-sm">
+            Review Now <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+    }
+
+    <!-- ── MAIN GRID: chart + team ───────────────────── -->
+    <div class="manager-grid mb-24">
+
+        <!-- 7-day revenue bar chart -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Team Revenue — Last 7 Days
+                </h6>
+                <span class="badge badge-secondary">Daily</span>
+            </div>
+            <div class="card-body">
+                <div class="mini-bar-chart">
+                    @for (day of last7Days(); track day.label) {
+                    <div class="bar-col">
+                        <div class="bar-tooltip">
+                            <strong>{{ day.label }}</strong>
+                            <span>₹{{ day.revenue | number:'1.0-0' }}</span>
+                            <span>{{ day.count }} sale{{ day.count !== 1 ? 's' : '' }}</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" [class.bar-today]="day.label === 'Today'"
+                                [style.height.%]="day.revenue > 0 ? (day.revenue / maxDayRevenue()) * 100 : 4">
+                            </div>
+                        </div>
+                        <span class="bar-label">{{ day.label }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Top performers -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="bi bi-trophy-fill me-2 text-primary"></i>Top Performers
+                </h6>
+                <span class="badge badge-secondary">By Revenue</span>
+            </div>
+            <div class="card-body">
+                @if (topPerformers().length === 0) {
+                <div class="empty-state">
+                    <i class="bi bi-people"></i>
+                    <p>No sales data yet</p>
+                </div>
+                } @else {
+                <div class="performer-list">
+                    @for (p of topPerformers(); track p.name; let i = $index) {
+                    <div class="performer-row">
+                        <div class="performer-rank" [class.rank-gold]="i === 0" [class.rank-silver]="i === 1"
+                            [class.rank-bronze]="i === 2">
+                            {{ i + 1 }}
+                        </div>
+                        <div class="performer-avatar" [style]="'background:' + getAvatarGradient(p.name)">
+                            {{ initials(p.name) }}
+                        </div>
+                        <div class="performer-info">
+                            <span class="performer-name">{{ p.name }}</span>
+                            <span class="performer-meta">{{ p.count }} sale{{ p.count !== 1 ? 's' : '' }}</span>
+                        </div>
+                        <div class="performer-revenue">₹{{ p.revenue | number:'1.0-0' }}</div>
+                    </div>
+                    <div class="performer-bar-track">
+                        <div class="performer-bar-fill" [style.width.%]="(p.revenue / maxPerformerRevenue()) * 100"
+                            [class.pb-gold]="i === 0" [class.pb-silver]="i === 1" [class.pb-bronze]="i === 2"
+                            [class.pb-default]="i > 2">
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+    </div>
+    <!-- ── QUICK ACTIONS ─────────────────────────────── -->
+    <div class="quick-actions-grid">
+        <a routerLink="/manager/purchases" class="quick-action-card qa-warning">
+            <div class="qa-icon"><i class="bi bi-truck"></i></div>
+            <div>
+                <p class="qa-title">Confirm Deliveries</p>
+                <p class="qa-sub">{{ pendingDeliveries().length }} awaiting review</p>
+            </div>
+            <i class="bi bi-arrow-right qa-arrow"></i>
+        </a>
+        <a routerLink="/manager/sales/all" class="quick-action-card qa-primary">
+            <div class="qa-icon"><i class="bi bi-receipt-cutoff"></i></div>
+            <div>
+                <p class="qa-title">All Sales</p>
+                <p class="qa-sub">Browse team transactions</p>
+            </div>
+            <i class="bi bi-arrow-right qa-arrow"></i>
+        </a>
+        <a routerLink="/manager/inventory" class="quick-action-card qa-secondary">
+            <div class="qa-icon"><i class="bi bi-boxes"></i></div>
+            <div>
+                <p class="qa-title">Inventory</p>
+                <p class="qa-sub">Check stock levels</p>
+            </div>
+            <i class="bi bi-arrow-right qa-arrow"></i>
+        </a>
+    </div>
+
+    <!-- ── BOTTOM GRID: staff + recent sales ─────────── -->
+    <div class="manager-grid mb-24">
+
+        <!-- My Staff -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="bi bi-people-fill me-2 text-primary"></i>My Staff
+                </h6>
+                <span class="badge badge-info">{{ staffList().length }} member{{ staffList().length !== 1 ? 's' : ''
+                    }}</span>
+            </div>
+
+            <app-table [hasData]="staffList().length > 0">
+                <ng-template #empty>
+                    <div class="empty-state">
+                        <i class="bi bi-person-plus"></i>
+                        <p>No staff assigned yet</p>
+                    </div>
+                </ng-template>
+                <ng-template #header>
+                    <tr>
+                        <th>Member</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                    </tr>
+                </ng-template>
+                <ng-template #body>
+                    @for (s of staffList(); track s.id) {
+                    <tr>
+                        <td>
+                            <div class="member-cell">
+                                <div class="member-avatar" [style]="'background:' + getAvatarGradient(s.userName)">
+                                    {{ initials(s.userName) }}
+                                </div>
+                                <span class="member-name">{{ s.userName }}</span>
+                            </div>
+                        </td>
+                        <td class="text-muted">{{ s.userEmail }}</td>
+                        <td>
+                            <span class="badge {{ s.active ? 'badge-success' : 'badge-danger' }}">
+                                <i class="bi {{ s.active ? 'bi-circle-fill' : 'bi-circle' }}" style="font-size:7px"></i>
+                                {{ s.active ? 'Active' : 'Inactive' }}
+                            </span>
+                        </td>
+                    </tr>
+                    }
+                </ng-template>
+            </app-table>
+        </div>
+
+        <!-- Recent Sales -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="bi bi-clock-history me-2 text-secondary"></i>Recent Sales
+                </h6>
+                <a routerLink="/admin/sales" class="view-all">View all</a>
+            </div>
+
+            <app-table [hasData]="recentSales().length > 0">
+                <ng-template #empty>
+                    <div class="empty-state">
+                        <i class="bi bi-receipt"></i>
+                        <p>No sales recorded yet</p>
+                    </div>
+                </ng-template>
+                <ng-template #header>
+                    <tr>
+                        <th>Customer</th>
+                        <th>Staff</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                    </tr>
+                </ng-template>
+                <ng-template #body>
+                    @for (s of recentSales(); track s.id) {
+                    <tr>
+                        <td>
+                            <div class="member-cell">
+                                <div class="member-avatar"
+                                    [style]="'background:' + getAvatarGradient(s.customerName || 'W')">
+                                    {{ initials(s.customerName || 'Walk-in') }}
+                                </div>
+                                <div>
+                                    <div class="member-name">{{ s.customerName || 'Walk-in' }}</div>
+                                    <div style="font-size:11px;color:var(--text-muted)">{{ s.saleDate | date:'MMM d,
+                                        h:mm a' }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-muted">{{ s.soldByName || '—' }}</td>
+                        <td><strong class="amount-green">₹{{ s.totalAmount | number:'1.0-0' }}</strong></td>
+                        <td>
+                            <span class="badge {{ paymentModeBadge(s.paymentMode) }}">{{ s.paymentMode }}</span>
+                        </td>
+                    </tr>
+                    }
+                </ng-template>
+            </app-table>
+        </div>
+
+    </div>
+
+
+
+    }
+</div>

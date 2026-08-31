@@ -1,0 +1,109 @@
+<div class="page-enter" @fadeIn>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Categories</h4>
+      <p>Manage product inventory categories</p>
+    </div>
+    <div class="page-header-right">
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> Add Category
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <app-loader />
+  } @else {
+
+  <div class="manager-toolbar">
+    <div class="toolbar-left">
+      <div class="toolbar-title">
+        <i class="bi bi-funnel"></i>
+        <span>Filter Categories</span>
+      </div>
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" class="form-control" placeholder="Search categories..." [(ngModel)]="search"
+          (ngModelChange)="applyFilter()">
+      </div>
+    </div>
+    <select class="form-select sort-select" [(ngModel)]="selectedSort" (change)="applyFilter()">
+      <option value="">Sort By</option>
+      @for (opt of sortOptions; track opt.value) {
+      <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </div>
+
+  @if (paged.items.length > 0) {
+  <div class="category-grid">
+    @for (c of paged.items; track c.id) {
+    <div class="category-card" [class]="cardColor(c.name)">
+
+      <div class="card-top">
+        <div class="cat-icon-wrap" [class]="cardColor(c.name)">
+          <i class="bi {{ categoryIcon(c.name) }}"></i>
+        </div>
+        <div class="card-top-meta">
+          <span class="cat-id">CAT-{{ c.id.toString().padStart(4, '0') }}</span>
+          <span class="cat-status"><i class="bi bi-circle-fill"></i> Active</span>
+        </div>
+      </div>
+
+      <div class="card-mid">
+        <h5 class="cat-name">{{ c.name }}</h5>
+        <div class="cat-products">
+          <span class="products-count">{{ c.totalProducts || 0 }}</span>
+          <span class="products-label">products</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn btn-sm btn-edit" (click)="openEdit(c)">
+          <i class="bi bi-pencil"></i> Edit
+        </button>
+        <button class="btn btn-sm btn-delete" [disabled]="(c.totalProducts || 0) > 0" (click)="delete(c)"
+          [title]="(c.totalProducts || 0) > 0 ? 'Cannot delete — has products' : 'Delete category'">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </div>
+
+    </div>
+    }
+  </div>
+
+  <!-- <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+    [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+  </app-paginator> -->
+
+  } @else {
+  <div class="empty-state">
+    <i class="bi bi-tags"></i>
+    <p>No categories found</p>
+  </div>
+  }
+  }
+</div>
+
+@if (showModal()) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">{{ editTarget() ? 'Edit Category' : 'Create Category' }}</h5>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category Name</label>
+        <input class="form-control" [(ngModel)]="formName" placeholder="Enter category name" (keyup.enter)="save()">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="save()">
+        {{ editTarget() ? 'Save Changes' : 'Create Category' }}
+      </button>
+    </div>
+  </div>
+</div>
+}

@@ -1,0 +1,239 @@
+.mb-24 {
+    margin-bottom: 18px;
+}
+
+/* ── PRODUCT CELL ────────────── */
+.product-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.product-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: linear-gradient(135deg,
+            var(--primary),
+            var(--primary-light));
+
+    color: #fff;
+    font-size: 14px;
+}
+
+.product-info {
+    flex: 1;
+}
+
+.product-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-weight: 600;
+}
+
+.product-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* ── STOCK PIPELINE BANNER ────────────── */
+.stock-pipeline {
+    background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-body) 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 22px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.stock-pipeline::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+    opacity: .5;
+    pointer-events: none;
+}
+
+.pipeline-stat {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+}
+
+.pipeline-stat.reverse {
+    flex-direction: row-reverse;
+}
+
+.pipeline-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+    flex-shrink: 0;
+    color: #fff;
+    position: relative;
+}
+
+.pipeline-icon.in-stock {
+    background: linear-gradient(135deg, #6366f1, #4338ca);
+    box-shadow: 0 6px 16px -4px rgba(67, 56, 202, .4);
+}
+
+.pipeline-icon.incoming {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 6px 16px -4px rgba(217, 119, 6, .4);
+}
+
+.pipeline-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pipeline-text.right {
+    align-items: flex-end;
+    text-align: right;
+}
+
+.pipeline-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+}
+
+.pipeline-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.pipeline-unit {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Connecting track */
+.pipeline-track {
+    flex: 1;
+    min-width: 120px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px;
+}
+
+.pipeline-line {
+    width: 100%;
+    height: 2px;
+    background: repeating-linear-gradient(to right,
+            var(--border) 0px,
+            var(--border) 6px,
+            transparent 6px,
+            transparent 12px);
+    position: relative;
+}
+
+.pipeline-line::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    height: 4px;
+    width: 38%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #4338ca, var(--primary));
+}
+
+.pipeline-dot {
+    position: absolute;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+}
+
+.pipeline-dot.start {
+    left: 0;
+    background: #4338ca;
+}
+
+.pipeline-dot.end {
+    right: 0;
+    background: #f59e0b;
+}
+
+.pipeline-caption {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.pipeline-caption i {
+    color: var(--primary);
+    font-size: 13px;
+}
+
+@media(max-width:768px) {
+    .stock-pipeline {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 20px;
+        gap: 18px;
+    }
+
+    .pipeline-stat,
+    .pipeline-stat.reverse {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .pipeline-text.right {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .pipeline-track {
+        order: 2;
+    }
+
+    .pipeline-line {
+        transform: rotate(0deg);
+    }
+}

@@ -1,0 +1,128 @@
+<div class="page-enter" @fadeIn>
+    <div class="page-header">
+        <div class="page-header-left">
+            <h4>Sales Report</h4>
+            <p>Track revenue, orders, and profit over time</p>
+        </div>
+        <div class="page-header-right">
+            <button class="btn btn-outline-secondary" (click)="exportExcel()" [disabled]="rows().length === 0">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button class="btn btn-primary" (click)="exportPDF()" [disabled]="rows().length === 0">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Toolbar -->
+    <div class="manager-toolbar mb-24">
+        <div class="toolbar-left">
+            <div class="toolbar-title">
+                <i class="bi bi-calendar3"></i>
+                <span>Date Range</span>
+            </div>
+            <div class="preset-chips">
+                @for (opt of presetOptions; track opt.value) {
+                <button class="filter-chip" [class.active]="activePreset === opt.value"
+                    (click)="applyPreset(opt.value)">
+                    {{ opt.label }}
+                </button>
+                }
+            </div>
+        </div>
+
+        @if (activePreset === 'custom') {
+        <div class="custom-range">
+            <input type="date" class="form-control" [(ngModel)]="startDate">
+            <span class="date-sep">to</span>
+            <input type="date" class="form-control" [(ngModel)]="endDate">
+            <button class="btn btn-primary btn-sm" (click)="generate()">Generate</button>
+        </div>
+        }
+    </div>
+
+    @if (error) {
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-circle"></i> {{ error }}
+    </div>
+    }
+
+    @if (loading()) {
+    <app-loader />
+    } @else {
+
+    <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+    <!-- Chart -->
+    @if (rows().length > 0) {
+    <div class="card mb-24">
+        <div class="card-header">
+            <h6 class="card-title">
+                <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Revenue & Profit Trend
+            </h6>
+            <span class="badge badge-secondary">
+                {{ activePreset === 'all' ? 'All Time' : (startDate + ' → ' + endDate) }}
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="chart-wrap"><canvas #salesChart height="100"></canvas></div>
+        </div>
+    </div>
+    }
+
+    <!-- Table -->
+    <div>
+        <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+            [searchPlaceholder]="'Search by date / label...'" (search)="search = $event; applyFilter()">
+            <ng-template #header>
+                <tr>
+                    <th>Date</th>
+                    <th>Orders</th>
+                    <th>Revenue</th>
+                    <th>Cost</th>
+                    <th>Profit</th>
+                    <th>Margin</th>
+                </tr>
+            </ng-template>
+            <ng-template #empty>
+                <div class="empty-state">
+                    <i class="bi bi-graph-up"></i>
+                    <p>No sales data for the selected period</p>
+                </div>
+            </ng-template>
+            <ng-template #body>
+                @for (row of paged.items; track row.label) {
+                <tr>
+                    <td><strong>{{ row.label }}</strong></td>
+                    <td>{{ row.totalOrders }}</td>
+                    <td>₹{{ row.revenue | number:'1.2-2' }}</td>
+                    <td class="text-danger">₹{{ row.cost | number:'1.2-2' }}</td>
+                    <td class="text-success">₹{{ row.profit | number:'1.2-2' }}</td>
+                    <td>
+                        <span class="badge" [class.badge-success]="row.marginPercent >= 20"
+                            [class.badge-warning]="row.marginPercent > 0 && row.marginPercent < 20"
+                            [class.badge-danger]="row.marginPercent <= 0">
+                            {{ row.marginPercent | number:'1.1-1' }}%
+                        </span>
+                    </td>
+                </tr>
+                }
+                @if (rows().length > 0) {
+                <tr class="total-row">
+                    <td><strong>Total</strong></td>
+                    <td><strong>{{ totalOrders }}</strong></td>
+                    <td><strong>₹{{ totalRevenue | number:'1.2-2' }}</strong></td>
+                    <td class="text-danger"><strong>₹{{ totalCost | number:'1.2-2' }}</strong></td>
+                    <td class="text-success"><strong>₹{{ totalProfit | number:'1.2-2' }}</strong></td>
+                    <td>—</td>
+                </tr>
+                }
+            </ng-template>
+        </app-table>
+        <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+            [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+        </app-paginator>
+    </div>
+
+    }
+</div>

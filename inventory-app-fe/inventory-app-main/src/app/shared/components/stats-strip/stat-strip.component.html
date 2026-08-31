@@ -1,0 +1,29 @@
+<div class="stat-strip mb-24">
+
+    @for (item of items; track item.label; let last = $last) {
+
+    <div class="stat-strip-item" [attr.title]="getFullValue(item)">
+
+        <div class="stat-strip-icon {{ item.iconClass }}">
+            <i [class]="'bi ' + item.icon"></i>
+        </div>
+
+        <div class="stat-strip-text">
+            <div class="stat-strip-value">
+                {{ getDisplayValue(item) }}
+            </div>
+
+            <div class="stat-strip-label">
+                {{ item.label }}
+            </div>
+        </div>
+
+    </div>
+
+    @if (!last) {
+    <div class="stat-strip-divider"></div>
+    }
+
+    }
+
+</div>

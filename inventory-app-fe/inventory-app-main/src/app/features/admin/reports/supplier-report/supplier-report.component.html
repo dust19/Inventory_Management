@@ -1,0 +1,94 @@
+<div class="page-enter" @fadeIn>
+    <div class="page-header">
+        <div class="page-header-left">
+            <h4>Supplier Report</h4>
+            <p>Supplier performance, stock supply and purchase totals</p>
+        </div>
+        <div class="page-header-right">
+            <button class="btn btn-outline-secondary" (click)="exportExcel()" [disabled]="filtered().length === 0">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button class="btn btn-primary" (click)="exportPDF()" [disabled]="filtered().length === 0">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+        </div>
+    </div>
+
+    @if (error) {
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-circle"></i> {{ error }}
+    </div>
+    }
+
+    @if (loading()) {
+    <app-loader />
+    } @else {
+
+    <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+    <!-- Chart -->
+    @if (all().length > 0) {
+    <div class="card mb-24">
+        <div class="card-header">
+            <h6 class="card-title">
+                <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Supplier Comparison
+            </h6>
+            <span class="badge badge-secondary">Purchase Value · Units Supplied</span>
+        </div>
+        <div class="card-body">
+            <div class="chart-wrap">
+                <canvas #supplierChart></canvas>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Table -->
+    <div>
+        <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+            [searchPlaceholder]="'Search by supplier name...'" (search)="search = $event; applySearch()">
+            <ng-template #header>
+                <tr>
+                    <th>#</th>
+                    <th>Supplier</th>
+                    <th>Total Products</th>
+                    <th>Units Supplied</th>
+                    <th>Purchase Value</th>
+                    <th>Avg. Product Value</th>
+                </tr>
+            </ng-template>
+            <ng-template #empty>
+                <div class="empty-state">
+                    <i class="bi bi-building"></i>
+                    <p>No supplier data found</p>
+                </div>
+            </ng-template>
+            <ng-template #body>
+                @for (s of paged.items; track s.supplierId; let i = $index) {
+                <tr>
+                    <td class="text-muted">{{ (paged.currentPage - 1) * paged.pageSize + i + 1 }}</td>
+                    <td><strong>{{ s.companyName }}</strong></td>
+                    <td>{{ s.totalProducts }}</td>
+                    <td>{{ s.totalStockSupplied }}</td>
+                    <td>₹{{ s.totalPurchaseValue | number:'1.2-2' }}</td>
+                    <td>₹{{ (s.totalProducts > 0 ? s.totalPurchaseValue / s.totalProducts : 0) | number:'1.2-2' }}</td>
+                </tr>
+                }
+                @if (filtered().length > 0) {
+                <tr class="total-row">
+                    <td colspan="2"><strong>Total</strong></td>
+                    <td><strong>{{ totalProducts }}</strong></td>
+                    <td><strong>{{ totalStockSupplied }}</strong></td>
+                    <td><strong>₹{{ totalPurchaseValue | number:'1.2-2' }}</strong></td>
+                    <td>—</td>
+                </tr>
+                }
+            </ng-template>
+        </app-table>
+        <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+            [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+        </app-paginator>
+    </div>
+
+    }
+</div>

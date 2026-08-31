@@ -1,0 +1,9 @@
+.customer-phone {
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+.details-space {
+    margin-top: 14px;
+}

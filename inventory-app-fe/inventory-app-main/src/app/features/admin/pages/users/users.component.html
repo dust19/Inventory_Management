@@ -1,0 +1,234 @@
+<div class="page-enter" @fadeIn>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>User Management</h4>
+      <p>Manage all system users and roles</p>
+    </div>
+    <div class="page-header-right">
+      <button class="btn btn-primary btn-md" (click)="openRegister()">
+        <i class="bi bi-person-plus-fill"></i> Create User
+      </button>
+    </div>
+  </div>
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+  @if (loading()) { <app-loader /> }
+  @else {
+  <div>
+    <app-table [hasData]="filtered().length > 0" [showSearch]="true" [searchQuery]="search"
+      [searchPlaceholder]="'Search users...'" (search)="search = $event; applyFilter()" [showFilter]="true"
+      [filterValue]="selectedRole" [filterPlaceholder]="'Filter by Role'" [filterOptions]="roleFilterOptions"
+      (filter)="selectedRole = $event; applyFilter()" [showSort]="true" [sortValue]="selectedSort"
+      [sortPlaceholder]="'Sort By'" [sortOptions]="sortOptions" (sort)="selectedSort = $event; applyFilter()">
+      <ng-template #empty>
+        <div class="empty-state">
+          <i class="bi bi-people"></i>
+          <p>No users found</p>
+        </div>
+      </ng-template>
+      <ng-template #header>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <!-- <th>Phone</th> -->
+          <th>Role</th>
+          <th>Status</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+      <!-- BODY -->
+      <ng-template #body>
+        @for (u of paged.items; track u.id) {
+        <tr>
+          <td>
+            #{{ u.id }}
+          </td>
+          <td>
+            <div class="user-cell">
+              <div class="avatar avatar-sm" [style.background]="getAvatarGradient(u.name)">
+                {{ initials(u.name) }}
+              </div>
+              <div class="user-name-row">
+                <span>{{ u.name }}</span>
+                <button class="btn btn-icon btn-ghost" (click)="viewUser(u)">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+          </td>
+          <td>{{ u.email }}</td>
+          <!-- <td>{{ u.phone }}</td> -->
+          <td><span class="badge {{ roleBadgeClass(u.role) }}">{{ roleLabel(u.role) }}</span></td>
+          <td>
+            <span class="badge" [class.badge-success]="u.active" [class.badge-danger]="!u.active">
+              {{ u.active ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            {{ u.createdAt | date:'dd MMM yyyy' }}
+          </td>
+          <td>
+            <div class="action-btns">
+              @if (u.role === 'ROLE_USER') {
+              <button class="btn btn-sm btn-outline-secondary" (click)="openAssign(u)" title="Assign Role">
+                <i class="bi bi-person-check-fill"></i> Assign Role
+              </button>
+              }
+              @else {
+              <div class="action-btns">
+                <button class="btn btn-icon btn-ghost disabled-action" (click)="toggleActive(u)"
+                  [disabled]="u.role === 'ROLE_ADMIN'" [title]="u.active ? 'Deactivate' : 'Activate'">
+                  <i class="bi {{ u.active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-danger' }} fs-4"></i>
+                </button>
+
+                <button class="btn btn-icon btn-ghost" (click)="openEdit(u)" title="Edit">
+                  <i class="bi bi-pencil fs-6"></i>
+                </button>
+
+                <button class="btn btn-icon btn-ghost text-danger disabled-action" (click)="deleteUser(u)"
+                  [disabled]="u.role === 'ROLE_ADMIN'" title="Delete">
+                  <i class="bi bi-trash fs-5"></i>
+                </button>
+              </div>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+      </ng-template>
+    </app-table>
+    <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+      [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+    </app-paginator>
+  </div>
+  }
+</div>
+
+@if (showModal()) {
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">Edit User</h5>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" [(ngModel)]="editForm.name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-control" [(ngModel)]="editForm.phone">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" [(ngModel)]="editForm.email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address</label>
+        <input class="form-control" [(ngModel)]="editForm.address">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="save()">Save Changes</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Register Modal (add at bottom of file) -->
+@if (showRegister()) {
+<div class="modal-overlay" (click)="closeRegister()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">Create New User</h5>
+      <button class="modal-close" (click)="closeRegister()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Role</label>
+        <select class="form-select select-head" [(ngModel)]="registerForm.role">
+          @for (r of availableRoles; track r) {
+          <option [value]="r">{{ roleLabel(r) }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-control" [(ngModel)]="registerForm.name" placeholder="Enter name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-control" [(ngModel)]="registerForm.phone" placeholder="10-digit number">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-control" type="email" [(ngModel)]="registerForm.email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-control" type="password" [(ngModel)]="registerForm.password"
+          placeholder="Minimum 6 characters">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address</label>
+        <input class="form-control" [(ngModel)]="registerForm.address" placeholder="City, State">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="closeRegister()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitRegister()">Create Account</button>
+    </div>
+  </div>
+</div>
+}
+@if (showAssignRole()) {
+<div class="modal-overlay" (click)="closeAssign()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h5 class="modal-title">Assign Role</h5>
+      <button class="modal-close" (click)="closeAssign()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Role</label>
+
+        <select class="form-select" [(ngModel)]="selectedRole">
+          <option value="">
+            -- Select Role --
+          </option>
+
+          @for (r of assignableRoles; track r) {
+          <option [value]="r">
+            {{ roleLabel(r) }}
+          </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="closeAssign()">
+        Cancel
+      </button>
+
+      <button class="btn btn-primary" [disabled]="!selectedRole" (click)="assignRole()">
+        Assign Role
+      </button>
+    </div>
+
+  </div>
+</div>
+}
+
+<app-view-detail-modal [visible]="showViewModal()" [title]="'User Details'" [data]="selectedUser" [fields]="viewFields"
+  (close)="closeViewDetailModal()">
+</app-view-detail-modal>

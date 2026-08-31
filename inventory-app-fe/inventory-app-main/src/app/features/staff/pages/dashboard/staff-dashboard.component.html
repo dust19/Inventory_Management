@@ -1,0 +1,179 @@
+<div class="page-enter" @fadeIn>
+
+    <!-- ── PAGE HEADER ──────────────────────────────── -->
+    <div class="page-header">
+        <div class="page-header-left">
+            <p class="greeting-eyebrow">{{ greeting() }},</p>
+            <h4>{{ auth.currentUser()?.name }}</h4>
+            <p>Here's your billing activity — {{ today }}</p>
+        </div>
+        <div class="page-header-right">
+            <a routerLink="/staff/sales" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg"></i> New Sale
+            </a>
+        </div>
+    </div>
+
+    @if (loading()) {
+    <app-loader></app-loader>
+    } @else {
+
+    <!-- ── STAT STRIP ────────────────────────────────── -->
+    <app-stat-strip [items]="staffStats()"></app-stat-strip>
+
+    <!-- ── MAIN GRID ─────────────────────────────────── -->
+    <div class="staff-grid mb-24">
+
+        <!-- ── 7-DAY MINI CHART ────────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>Last 7 Days
+                </h6>
+                <span class="badge badge-secondary">Revenue</span>
+            </div>
+            <div class="card-body">
+                <div class="mini-bar-chart">
+                    @for (day of last7Days(); track day.label) {
+                    <div class="bar-col">
+                        <div class="bar-tooltip">
+                            <strong>{{ day.label }}</strong>
+                            <span>₹{{ day.revenue | number:'1.0-0' }}</span>
+                            <span>{{ day.count }} sale{{ day.count !== 1 ? 's' : '' }}</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" [class.bar-today]="day.label === 'Today'"
+                                [style.height.%]="day.revenue > 0 ? (day.revenue / maxDayRevenue()) * 100 : 4">
+                            </div>
+                        </div>
+                        <span class="bar-label">{{ day.label }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ── PAYMENT BREAKDOWN ───────────────── -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title">
+                    <i class="bi bi-pie-chart-fill me-2 text-primary"></i>Payment Methods
+                </h6>
+                <span class="badge badge-secondary">All Time</span>
+            </div>
+            <div class="card-body">
+                @if (paymentBreakdown().length === 0) {
+                <div class="empty-state">
+                    <i class="bi bi-credit-card"></i>
+                    <p>No payment data yet</p>
+                </div>
+                } @else {
+                <div class="payment-breakdown">
+                    @for (item of paymentBreakdown(); track item.mode) {
+                    <div class="payment-row">
+                        <div class="payment-row-top">
+                            <span class="badge {{ paymentModeBadge(item.mode) }}">{{ item.mode }}</span>
+                            <span class="payment-count">{{ item.count }} sale{{ item.count !== 1 ? 's' : '' }}</span>
+                            <span class="payment-pct">{{ item.pct }}%</span>
+                        </div>
+                        <div class="progress-track">
+                            <div class="progress-fill" [style.width.%]="item.pct"
+                                [class]="'pf-' + item.mode.toLowerCase()"></div>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── QUICK ACTIONS ─────────────────────────────── -->
+    <div class="quick-actions-grid">
+        <a routerLink="/staff/sales" class="quick-action-card qa-primary">
+            <div class="qa-icon"><i class="bi bi-plus-circle-fill"></i></div>
+            <div>
+                <p class="qa-title">New Sale</p>
+                <p class="qa-sub">Create a billing entry</p>
+            </div>
+            <i class="bi bi-arrow-right qa-arrow"></i>
+        </a>
+        <a routerLink="/staff/history" class="quick-action-card qa-secondary">
+            <div class="qa-icon"><i class="bi bi-receipt"></i></div>
+            <div>
+                <p class="qa-title">All My Sales</p>
+                <p class="qa-sub">Browse your history</p>
+            </div>
+            <i class="bi bi-arrow-right qa-arrow"></i>
+        </a>
+        <a routerLink="/staff/inventory" class="quick-action-card qa-warning">
+            <div class="qa-icon"><i class="bi bi-boxes"></i></div>
+            <div>
+                <p class="qa-title">Check Stock</p>
+                <p class="qa-sub">View product availability</p>
+            </div>
+            <i class="bi bi-arrow-right qa-arrow"></i>
+        </a>
+    </div>
+
+    <!-- ── TODAY AT A GLANCE ─────────────────────────── -->
+    <div class="card mb-24">
+        <div class="card-header">
+            <div>
+                <h6 class="card-title">
+                    <i class="bi bi-clock-history me-2 text-secondary"></i>Recent Sales
+                </h6>
+            </div>
+            <div class="flex-dir">
+                <p class="card-title">Today Transactions :
+                </p>
+                <span class="badge badge-info">{{ totalToday() }} transaction{{ totalToday() !== 1 ? 's' : '' }}</span>
+            </div>
+        </div>
+
+        <app-table [hasData]="recentSales().length > 0">
+            <ng-template #empty>
+                <div class="empty-state">
+                    <i class="bi bi-receipt"></i>
+                    <p>No sales recorded yet today</p>
+                </div>
+            </ng-template>
+
+            <ng-template #header>
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Date &amp; Time</th>
+                    <th>Status</th>
+                </tr>
+            </ng-template>
+
+            <ng-template #body>
+                @for (s of recentSales(); track s.id) {
+                <tr>
+                    <td><strong>#{{ s.id }}</strong></td>
+                    <td>
+                        <div class="customer-cell">
+                            <div class="customer-avatar">{{ (s.customerName || 'G').charAt(0).toUpperCase() }}</div>
+                            <span>{{ s.customerName || 'Walk-in Customer' }}</span>
+                        </div>
+                    </td>
+                    <td><strong class="amount">₹{{ s.totalAmount | number:'1.0-0' }}</strong></td>
+                    <td>
+                        <span class="badge {{ paymentModeBadge(s.paymentMode) }}">{{ s.paymentMode }}</span>
+                    </td>
+                    <td class="text-muted">{{ s.saleDate | date:'MMM d, h:mm a' }}</td>
+                    <td><span class="badge badge-success"><i class="bi bi-check-circle-fill"></i> Completed</span></td>
+                </tr>
+                }
+            </ng-template>
+        </app-table>
+    </div>
+
+
+
+    }
+</div>

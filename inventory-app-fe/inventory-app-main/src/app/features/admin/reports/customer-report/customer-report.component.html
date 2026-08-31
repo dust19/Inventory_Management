@@ -1,0 +1,228 @@
+<div class="page-enter" @fadeIn>
+    <div class="page-header">
+        <div class="page-header-left">
+            <h4>Customer Report</h4>
+            <p>Order history, spending patterns and customer tiers</p>
+        </div>
+        <div class="page-header-right">
+            <button class="btn btn-outline-secondary" (click)="exportExcel()" [disabled]="filtered().length === 0">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button class="btn btn-primary" (click)="exportPDF()" [disabled]="filtered().length === 0">
+                <i class="bi bi-file-earmark-pdf"></i> PDF
+            </button>
+        </div>
+    </div>
+
+    @if (error) {
+    <div class="alert alert-danger">
+        <i class="bi bi-exclamation-circle"></i> {{ error }}
+    </div>
+    }
+
+    @if (loading()) {
+    <app-loader />
+    } @else {
+
+    <!-- ── TOP ROW ── -->
+    <div class="report-overview mb-24">
+
+        <div class="overview-top-row">
+            <!-- Spotlight: Top Customer -->
+            <div class="spotlight-card">
+                <div class="spotlight-glow"></div>
+                <div class="spotlight-label">
+                    <i class="bi bi-trophy-fill"></i> Top Customer
+                </div>
+                @if (topCustomer()) {
+                <div class="spotlight-body">
+                    <div class="spotlight-avatar">{{ initials(topCustomer()!.name) }}</div>
+                    <div class="spotlight-info">
+                        <h3>{{ topCustomer()!.name }}</h3>
+                        <p>{{ topCustomer()!.email }}</p>
+                    </div>
+                </div>
+                <div class="spotlight-stats">
+                    <div class="spotlight-stat">
+                        <span class="spotlight-value">₹{{ topCustomer()!.totalSpent | number:'1.0-0' }}</span>
+                        <span class="spotlight-key">Lifetime Spend</span>
+                    </div>
+                    <div class="spotlight-stat-divider"></div>
+                    <div class="spotlight-stat">
+                        <span class="spotlight-value">{{ topCustomer()!.totalOrders }}</span>
+                        <span class="spotlight-key">Orders Placed</span>
+                    </div>
+                    <div class="spotlight-stat-divider"></div>
+                    <div class="spotlight-stat">
+                        <span class="spotlight-value">{{ getCustomerTier(topCustomer()!.totalSpent).label }}</span>
+                        <span class="spotlight-key">Tier</span>
+                    </div>
+                </div>
+                } @else {
+                <p class="spotlight-empty">No customer data yet</p>
+                }
+            </div>
+
+            <!-- Tier Distribution -->
+            <div class="tier-distribution-card">
+                <div class="tier-dist-header">
+                    <i class="bi bi-bar-chart-steps"></i>
+                    <span>Tier Distribution</span>
+                </div>
+                <div class="tier-dist-list">
+                    @for (t of tierBreakdown(); track t.key) {
+                    <div class="tier-dist-row">
+                        <div class="tier-dist-label">
+                            <i class="bi {{ tierIcon(t.key) }} tier-icon {{ t.cls }}"></i>
+                            <span>{{ t.label }}</span>
+                        </div>
+                        <div class="tier-dist-track">
+                            <div class="tier-dist-fill" [class]="t.cls" [style.width]="t.pct + '%'"></div>
+                        </div>
+                        <span class="tier-dist-count">{{ t.count }}</span>
+                    </div>
+                    }
+                </div>
+
+                <!-- Tier legend banner -->
+                <div class="tier-legend">
+                    <div class="tier-legend-item tier-bronze">
+                        <i class="bi bi-circle-fill tier-icon tier-bronze"></i>
+                        <div>
+                            <span class="tier-legend-name">Bronze</span>
+                            <span class="tier-legend-range">Under ₹2,000</span>
+                        </div>
+                    </div>
+                    <div class="tier-legend-item tier-silver">
+                        <i class="bi bi-star-half tier-icon tier-silver"></i>
+                        <div>
+                            <span class="tier-legend-name">Silver</span>
+                            <span class="tier-legend-range">₹2,000 – ₹10K</span>
+                        </div>
+                    </div>
+                    <div class="tier-legend-item tier-gold">
+                        <i class="bi bi-star-fill tier-icon tier-gold"></i>
+                        <div>
+                            <span class="tier-legend-name">Gold</span>
+                            <span class="tier-legend-range">₹10K – ₹50K</span>
+                        </div>
+                    </div>
+                    <div class="tier-legend-item tier-platinum">
+                        <i class="bi bi-gem tier-icon tier-platinum"></i>
+                        <div>
+                            <span class="tier-legend-name">Platinum</span>
+                            <span class="tier-legend-range">₹50,000+</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Metrics -->
+        <div class="overview-bottom-row">
+            <div class="quick-metrics-card">
+                <div class="quick-metric">
+                    <div class="qm-icon"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <span class="qm-value">{{ all().length }}</span>
+                        <span class="qm-label">Total Customers</span>
+                    </div>
+                </div>
+                <div class="quick-metric">
+                    <div class="qm-icon"><i class="bi bi-cart-fill"></i></div>
+                    <div>
+                        <span class="qm-value">{{ totalOrders }}</span>
+                        <span class="qm-label">Total Orders</span>
+                    </div>
+                </div>
+                <div class="quick-metric">
+                    <div class="qm-icon accent"><i class="bi bi-currency-rupee"></i></div>
+                    <div>
+                        <span class="qm-value">₹{{ totalRevenue | number:'1.0-0' }}</span>
+                        <span class="qm-label">Total Revenue</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── TOOLBAR ── -->
+    <div class="manager-toolbar mb-24">
+        <div class="toolbar-left">
+            <div class="toolbar-title">
+                <i class="bi bi-people"></i>
+                <span>Customers</span>
+            </div>
+            <div class="preset-chips">
+                @for (opt of sortOptions; track opt.value) {
+                <button class="filter-chip" [class.active]="sortBy === opt.value" (click)="applySort(opt.value)">
+                    <i class="bi {{ opt.icon }}"></i> {{ opt.label }}
+                </button>
+                }
+            </div>
+        </div>
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" class="form-control" placeholder="Search by name or email..." [(ngModel)]="search"
+                (ngModelChange)="onSearchChange($event)">
+        </div>
+    </div>
+
+    <!-- ── CUSTOMER LIST ── -->
+    @if (paged.items.length === 0) {
+    <div class="empty-state">
+        <i class="bi bi-people"></i>
+        <p>No customers found</p>
+    </div>
+    } @else {
+    <div class="customer-list">
+        @for (c of paged.items; track c.email; let i = $index) {
+        <div class="customer-row" [class]="'row-' + getCustomerTier(c.totalSpent).cls">
+            <div class="rank-badge" [class.top-rank]="globalRank(i) <= 3">
+                @if (globalRank(i) <= 3) { <i class="bi bi-award-fill"></i>
+                    } @else {
+                    #{{ globalRank(i) }}
+                    }
+            </div>
+
+            <div class="customer-avatar" [class]="avatarColor(c.name)">{{ initials(c.name) }}</div>
+
+            <div class="customer-main">
+                <h5>{{ c.name }}</h5>
+                <span class="customer-email">{{ c.email }}</span>
+            </div>
+
+            <div class="customer-metric">
+                <span class="metric-value">{{ c.totalOrders }}</span>
+                <span class="metric-label">orders</span>
+            </div>
+
+            <div class="customer-metric spend">
+                <span class="metric-value">₹{{ c.totalSpent | number:'1.0-0' }}</span>
+                <span class="metric-label">spent</span>
+            </div>
+
+            <div class="customer-metric">
+                <span class="metric-value small">{{ c.lastPurchase ? (c.lastPurchase | date:'MMM d') : '—' }}</span>
+                <span class="metric-label">last order</span>
+            </div>
+
+            <div class="tier-badge-wrap">
+                <i
+                    class="bi {{ tierIcon(getCustomerTier(c.totalSpent).cls) }} tier-icon {{ getCustomerTier(c.totalSpent).cls }}"></i>
+                <span class="tier-badge" [class]="getCustomerTier(c.totalSpent).cls">
+                    {{ getCustomerTier(c.totalSpent).label }}
+                </span>
+            </div>
+        </div>
+        }
+    </div>
+
+    <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+        [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+    </app-paginator>
+    }
+
+    }
+</div>

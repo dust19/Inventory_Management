@@ -1,0 +1,84 @@
+<div class="page-enter" @fadeIn>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Inventory</h4>
+      <p>Track stock levels across all products</p>
+    </div>
+  </div>
+
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+  @if (loading()) { <app-loader /> }
+  @else {
+  <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+    [searchPlaceholder]="'Search inventory...'" (search)="search = $event; applyFilter()" [showFilter]="true"
+    [filterValue]="filter" [filterPlaceholder]="'Filter by Health'" [filterOptions]="statusFilterOptions"
+    (filter)="filter = $event; applyFilter()" [showSort]="true" [sortValue]="selectedSort" [sortPlaceholder]="'Sort By'"
+    [sortOptions]="sortOptions" (sort)="selectedSort = $event; applyFilter()">
+    <ng-template #header>
+      <tr>
+        <th>#</th>
+        <th>Product</th>
+        <th>SKU</th>
+        <th>Stock</th>
+        <th>Reorder</th>
+        <th>Health</th>
+        <th>Updated</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template #empty>
+      <div class="empty-state">
+        <i class="bi bi-archive"></i>
+        <p>No inventory records</p>
+      </div>
+    </ng-template>
+    <ng-template #body>
+      @for (item of paged.items; track item.id) {
+      <tr>
+        <td><strong>#{{ item.id }}</strong></td>
+        <td><strong>{{ item.productName }}</strong></td>
+        <td><code class="sku">{{ item.sku }}</code></td>
+        <td><span [style.color]="item.availableStock <= item.reorderLevel ? 'var(--danger)' : 'var(--success)'"
+            style="font-weight:700;font-family:'JetBrains Mono',monospace">{{ item.availableStock }}</span></td>
+        <td>{{ item.reorderLevel }}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;max-width:70px">
+              <div [style.width]="stockPct(item)+'%'"
+                [style.background]="stockPct(item)<30?'var(--danger)':'var(--success)'"
+                style="height:100%;border-radius:3px;transition:width .3s"></div>
+            </div>
+            <span class="badge {{ item.availableStock <= item.reorderLevel ? 'badge-danger' : 'badge-success' }}">{{
+              item.availableStock <= item.reorderLevel ? 'Low' : 'OK' }}</span>
+          </div>
+        </td>
+        <td>{{ item.lastUpdated | date:'MMM d, y' }}</td>
+        <td><button class="btn btn-sm btn-outline-secondary" (click)="openReorder(item)"><i class="bi bi-sliders"></i>
+            Reorder</button></td>
+      </tr>
+      }
+    </ng-template>
+  </app-table>
+  <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+    [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+  </app-paginator>
+  }
+</div>
+
+@if (reorderTarget()) {
+<div class="modal-overlay" (click)="closeReorder()">
+  <div class="modal-box modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">Set Reorder Level</h5><button class="modal-close" (click)="closeReorder()">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;margin-bottom:14px"><strong>{{ reorderTarget()!.productName }}</strong></p>
+      <div class="form-group"><label class="form-label">Reorder Level</label><input class="form-control" type="number"
+          [(ngModel)]="newReorder" min="0"></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline-secondary" (click)="closeReorder()">Cancel</button><button
+        class="btn btn-primary" (click)="saveReorder()">Save</button></div>
+  </div>
+</div>
+}

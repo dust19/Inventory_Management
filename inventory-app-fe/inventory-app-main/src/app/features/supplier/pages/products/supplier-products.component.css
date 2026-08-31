@@ -1,0 +1,28 @@
+/* ── PRODUCT CELL ─────────────────────────────── */
+.product-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-info {
+  flex: 1;
+}
+
+.product-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.product-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.action-row {
+  display: flex;
+  gap: 4px;
+}

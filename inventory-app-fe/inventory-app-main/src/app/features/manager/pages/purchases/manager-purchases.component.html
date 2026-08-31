@@ -1,0 +1,128 @@
+<div class="page-enter manager-page" @fadeIn>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Confirm Deliveries</h4>
+      <p>Validate delivered purchase orders and finalize stock updates.</p>
+    </div>
+  </div>
+
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+  <!-- TABLE -->
+  @if (loading()) {
+  <app-loader />
+  } @else {
+  <div>
+    <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+      [searchPlaceholder]="'Search by supplier or order ID...'" (search)="search = $event; applyFilter()"
+      [showFilter]="true" [filterValue]="selectedStatus" [filterPlaceholder]="'All Statuses'"
+      [filterOptions]="statusFilterOptions" (filter)="selectedStatus = $event; applyFilter()" [showSort]="true"
+      [sortValue]="selectedSort" [sortPlaceholder]="'Sort By'" [sortOptions]="sortOptions"
+      (sort)="selectedSort = $event; applyFilter()">
+
+      <ng-template #header>
+        <tr>
+          <th>Order</th>
+          <th>Supplier</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Confirmed By</th>
+          <th>Status</th>
+          <th>Confirmed At</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #empty>
+        <div class="empty-state">
+          <i class="bi bi-cart"></i>
+          <p>No purchase orders yet</p>
+        </div>
+      </ng-template>
+
+      <ng-template #body>
+        @for (p of paged.items; track p.id) {
+        <tr>
+          <td><span class="order-id">#{{ p.id }}</span></td>
+          <td>
+            <div class="supplier-cell">
+              <span>{{ p.supplierName ?? ('Supplier #' + p.supplierId) }}</span>
+            </div>
+          </td>
+          <td><span class="items-pill">{{ p.items.length }} item{{ p.items.length !== 1 ? 's' : '' }}</span></td>
+          <td><strong class="amount-cell">{{ p.totalAmount | number:'1.2-2' }}</strong></td>
+          <td>{{ p.confirmedByName || '-' }}</td>
+          <td><span class="badge {{ statusBadge(p.status) }}">{{ p.status }}</span></td>
+          <td>
+            {{ p.confirmedAt ? (p.confirmedAt | date:'MMM d, y hh:mm') : '-' }}
+
+          </td>
+          <td>
+            <div class="action-group">
+              <button class="btn btn-icon btn-ghost" (click)="detailItem.set(p)" title="View details">
+                <i class="bi bi-eye"></i>
+              </button>
+              @if (p.status === 'DELIVERED') {
+              <button class="btn btn-sm btn-success" (click)="confirm(p)">
+                <i class="bi bi-check-lg"></i> Confirm
+              </button>
+              }
+              @if (p.status === 'PENDING' || p.status === 'DELIVERED') {
+              <button class="btn btn-sm btn-ghost-danger" (click)="cancel(p)">
+                <i class="bi bi-x-lg"></i> Cancel
+              </button>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+      </ng-template>
+    </app-table>
+
+    <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+      [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+    </app-paginator>
+  </div>
+  }
+</div>
+
+<!-- ── Detail Modal ──────────────────────────────────────────── -->
+@if (detailItem()) {
+<div class="modal-overlay" (click)="detailItem.set(null)">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h5 class="modal-title">Purchase #{{ detailItem()!.id }}</h5>
+      <button class="modal-close" (click)="detailItem.set(null)">×</button>
+    </div>
+    <div class="modal-body">
+      <p>Status: <span class="badge {{ statusBadge(detailItem()!.status) }}">{{ detailItem()!.status }}</span></p>
+      <p class="spaced">Total: <strong>{{ detailItem()!.totalAmount | number:'1.2-2' }}</strong></p>
+      <div class="table-wrap spaced">
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of detailItem()!.items; track i.productId) {
+            <tr>
+              <td>{{ i.productName }}</td>
+              <td>{{ i.quantity }}</td>
+              <td>{{ i.unitPrice | number:'1.2-2' }}</td>
+              <td>{{ i.subTotal | number:'1.2-2' }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-secondary" (click)="detailItem.set(null)">Close</button>
+    </div>
+  </div>
+</div>
+}

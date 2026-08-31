@@ -1,0 +1,116 @@
+<div class="page-enter" @fadeIn>
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Suppliers</h4>
+      <p>Manage your product suppliers</p>
+    </div>
+    <div class="page-header-right">
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> Add Supplier
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+  <app-loader />
+  } @else {
+
+  <div class="manager-toolbar">
+    <div class="toolbar-left">
+      <div class="toolbar-title">
+        <i class="bi bi-funnel"></i>
+        <span>Filter Suppliers</span>
+      </div>
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" class="form-control" placeholder="Search suppliers..." [(ngModel)]="search"
+          (ngModelChange)="applyFilter()">
+      </div>
+      <select class="form-select sort-select" [(ngModel)]="selectedCategory" (change)="applyFilter()">
+        <option value="">Filter by Category</option>
+        @for (opt of categoryFilterOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+    <select class="form-select sort-select" [(ngModel)]="selectedSort" (change)="applyFilter()">
+      <option value="">Sort By</option>
+      @for (opt of sortOptions; track opt.value) {
+      <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </div>
+
+  @if (paged.items.length > 0) {
+  <div class="supplier-grid">
+    @for (s of paged.items; track s.id) {
+    <div class="supplier-card">
+      <div class="supplier-card-top">
+        <div class="supplier-info">
+          <div class="avatar avatar-sm" [style.background]="getAvatarGradient(s.userName || 'Local Supplier')">
+            {{ initials(s.userName || 'Local Supplier') }}
+          </div>
+          <div class="supplier-name-block">
+            <h5>{{ s.userName || 'Local Supplier' }}</h5>
+            <p>{{ s.companyName }}</p>
+          </div>
+        </div>
+        <div class="supplier-status">
+          <span class="badge {{ s.active ? 'badge-success' : 'badge-danger' }}">
+            <i class="bi {{ s.active ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
+            {{ s.active ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="supplier-category">
+        <span class="category-label">
+          <i class="bi bi-tag-fill"></i> Category
+        </span>
+        <span class="category-value">{{ s.categoryName }}</span>
+      </div>
+
+      <div class="supplier-body">
+        <div class="info-row">
+          <span class="label">Supplier ID</span>
+          <span>SUP-000{{ s.id }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label"><i class="bi bi-calendar3"></i> Created</span>
+          <span>{{ s.createdAt | date:'MMM d, y' }}</span>
+        </div>
+      </div>
+
+      <div class="supplier-actions">
+        <button class="btn btn-outline-secondary btn-sm" (click)="openEdit(s)">
+          <i class="bi bi-pencil-square"></i>
+          Edit
+        </button>
+        <button class="btn btn-sm" [class.btn-outline-danger]="s.active" [class.btn-outline-success]="!s.active"
+          (click)="toggleActive(s)">
+
+          <i class="bi" [class.bi-slash-circle]="s.active" [class.bi-check-circle]="!s.active">
+          </i>
+
+          {{ s.active ? 'Deactivate' : 'Activate' }}
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <i class="bi bi-truck"></i>
+    <p>No suppliers yet</p>
+  </div>
+  }
+
+  <!-- <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+    [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+  </app-paginator> -->
+  }
+</div>
+
+<app-supplier-form [visible]="showModal()" [form]="form" [categories]="categories()" [availableUsers]="availableUsers()"
+  [isEdit]="isEdit()" (close)="closeModal()" (save)="save()">
+</app-supplier-form>

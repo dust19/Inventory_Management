@@ -1,0 +1,407 @@
+<div class="page-enter" @fadeIn>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h4>Purchase Orders</h4>
+      <p>Manage supplier orders and track deliveries</p>
+    </div>
+    <div class="page-header-right">
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="bi bi-plus-lg"></i> New Order
+      </button>
+    </div>
+  </div>
+
+  <!-- STATS STRIP -->
+  <app-stat-strip [items]="dashboardStats()"></app-stat-strip>
+
+  <!-- TABLE -->
+  @if (loading()) {
+  <app-loader />
+  } @else {
+  <div>
+    <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+      [searchPlaceholder]="'Search by supplier or order ID...'" (search)="search = $event; applyFilter()"
+      [showFilter]="true" [filterValue]="selectedStatus" [filterPlaceholder]="'All Statuses'"
+      [filterOptions]="statusFilterOptions" (filter)="selectedStatus = $event; applyFilter()" [showSort]="true"
+      [sortValue]="selectedSort" [sortPlaceholder]="'Sort By'" [sortOptions]="sortOptions"
+      (sort)="selectedSort = $event; applyFilter()">
+
+      <ng-template #header>
+        <tr>
+          <th>Order</th>
+          <th>Supplier</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Confirmed By</th>
+          <th>Status</th>
+          <th>Confirmed At</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #empty>
+        <div class="empty-state">
+          <i class="bi bi-cart"></i>
+          <p>No purchase orders yet</p>
+        </div>
+      </ng-template>
+
+      <ng-template #body>
+        @for (p of paged.items; track p.id) {
+        <tr>
+          <td><span class="order-id">#{{ p.id }}</span></td>
+          <td>
+            <div class="supplier-cell">
+              <span>{{ p.supplierName ?? ('Supplier #' + p.supplierId) }}</span>
+            </div>
+          </td>
+          <td><span class="items-pill">{{ p.items.length }} item{{ p.items.length !== 1 ? 's' : '' }}</span></td>
+          <td><strong class="amount-cell">{{ p.totalAmount | number:'1.2-2' }}</strong></td>
+          <td>{{ p.confirmedByName || 'pending..' }}</td>
+          <td><span class="badge {{ statusBadge(p.status) }}">{{ p.status }}</span></td>
+          <td>
+            {{ p.confirmedAt ? (p.confirmedAt | date:'MMM d, y hh:mm') : 'pending..' }}
+
+          </td>
+          <td>
+            <div class="action-group">
+              <button class="btn btn-icon btn-ghost" (click)="detailItem.set(p)" title="View details">
+                <i class="bi bi-eye"></i>
+              </button>
+              @if (p.status === 'DELIVERED') {
+              <button class="btn btn-sm btn-success" (click)="confirm(p)">
+                <i class="bi bi-check-lg"></i> Confirm
+              </button>
+              }
+              @if (p.status === 'PENDING' || p.status === 'DELIVERED') {
+              <button class="btn btn-sm btn-ghost-danger" (click)="cancel(p)">
+                <i class="bi bi-x-lg"></i> Cancel
+              </button>
+              }
+            </div>
+          </td>
+        </tr>
+        }
+      </ng-template>
+    </app-table>
+
+    <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+      [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+    </app-paginator>
+  </div>
+  }
+</div>
+
+
+<!-- ══════════════════════════════════════
+     CREATE ORDER MODAL
+     ══════════════════════════════════════ -->
+@if (showCreate()) {
+<div class="modal-overlay" (click)="closeCreate()">
+  <div class="po-modal" (click)="$event.stopPropagation()">
+
+    <!-- MODAL HEADER -->
+    <div class="po-modal-header">
+      <div class="po-modal-title">
+        <div class="po-modal-icon"><i class="bi bi-cart-plus-fill"></i></div>
+        <div>
+          <h5>New Purchase Order</h5>
+          <p>Create an order and send it to your supplier</p>
+        </div>
+      </div>
+      <button class="po-close-btn" (click)="closeCreate()"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <!-- STEP PROGRESS BAR -->
+    <div class="po-stepper">
+      <div class="po-stepper-track">
+        <div class="po-step-item" [class.active]="currentStep() >= 1" [class.done]="currentStep() > 1">
+          <div class="po-step-bubble">
+            @if (currentStep() > 1) { <i class="bi bi-check-lg"></i> } @else { 1 }
+          </div>
+          <span>Supplier</span>
+        </div>
+        <div class="po-step-line" [class.filled]="currentStep() > 1"></div>
+        <div class="po-step-item" [class.active]="currentStep() >= 2" [class.done]="currentStep() > 2">
+          <div class="po-step-bubble">
+            @if (currentStep() > 2) { <i class="bi bi-check-lg"></i> } @else { 2 }
+          </div>
+          <span>Products</span>
+        </div>
+        <div class="po-step-line" [class.filled]="currentStep() > 2"></div>
+        <div class="po-step-item" [class.active]="currentStep() >= 3">
+          <div class="po-step-bubble">3</div>
+          <span>Review</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: SUPPLIER (outside scroll so dropdown is never clipped) ── -->
+    <div class="po-supplier-section">
+      <div class="po-panel-label">
+        <i class="bi bi-building"></i>
+        Select Supplier
+        @if (selectedSupplierId) {
+        <span class="po-panel-done"><i class="bi bi-check-circle-fill"></i> {{ selectedSupplierName }}</span>
+        }
+      </div>
+      <div class="supplier-search-wrap">
+        <div class="input-icon-wrap">
+          <i class="bi bi-search field-icon"></i>
+          <input class="form-control" [(ngModel)]="supplierSearch" placeholder="Type to search suppliers..."
+            (focus)="supplierDropdownOpen.set(true)" (ngModelChange)="supplierDropdownOpen.set(true)"
+            autocomplete="off">
+          @if (selectedSupplierId) {
+          <i class="bi bi-check-circle-fill field-icon-right text-success"></i>
+          }
+        </div>
+
+        @if (supplierDropdownOpen()) {
+        <div class="supplier-dropdown">
+          @if (filteredSuppliers.length === 0) {
+          <div class="dropdown-empty">
+            <i class="bi bi-search"></i>
+            No suppliers match your search
+          </div>
+          } @else {
+          @for (s of filteredSuppliers; track s.id) {
+          <div class="supplier-option" [class.active]="s.id === selectedSupplierId" (click)="selectSupplier(s)">
+            <div class="supplier-avatar">{{ s.companyName.charAt(0).toUpperCase() }}</div>
+            <div class="supplier-option-info">
+              <strong>{{ s.companyName }}</strong>
+              <span>{{ s.categoryName }}</span>
+            </div>
+            @if (s.id === selectedSupplierId) {
+            <i class="bi bi-check-circle-fill supplier-selected-icon"></i>
+            }
+          </div>
+          }
+          }
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- MODAL BODY (scrolls internally — products + summary only) -->
+    <div class="po-modal-body">
+
+      <!-- ── STEP 2: PRODUCTS ── -->
+      @if (supProducts().length > 0) {
+      <div class="po-panel">
+        <div class="po-panel-label">
+          <i class="bi bi-box-seam"></i>
+          Add Products
+          @if (orderItems.length > 0) {
+          <span class="po-panel-done"><i class="bi bi-check-circle-fill"></i> {{ orderItems.length }} added</span>
+          }
+        </div>
+
+        <div class="input-icon-wrap" style="margin-bottom: 10px">
+          <i class="bi bi-search field-icon"></i>
+          <input class="form-control" [ngModel]="productSearch()" (ngModelChange)="onProductSearchChange($event)"
+            placeholder="Search by name or SKU...">
+        </div>
+
+        <div class="product-list">
+          @if (visibleProducts.length === 0) {
+          <div class="list-empty-state">
+            <i class="bi bi-box-seam"></i>
+            <p>No products found</p>
+          </div>
+          } @else {
+          @for (p of visibleProducts; track p.id) {
+          <div class="product-row" [class.selected]="p.id === selectedProductId" (click)="selectProduct(p.id)">
+            <div class="product-row-avatar">{{ p.name.charAt(0).toUpperCase() }}</div>
+            <div class="product-row-info">
+              <div class="product-row-name">{{ p.name }}</div>
+              <div class="product-row-sku">{{ p.sku }}</div>
+            </div>
+            <div class="product-row-price">₹{{ p.supplierToAdminPrice | number:'1.2-2' }}</div>
+            <button class="btn-add-product" [class.added]="isAdded(p.id)"
+              (click)="$event.stopPropagation(); quickAddItem(p.id)">
+              @if (isAdded(p.id)) { <i class="bi bi-check-lg"></i> Added } @else { <i class="bi bi-plus-lg"></i> Add }
+            </button>
+          </div>
+          }
+          @if (hasMoreProducts) {
+          <button class="load-more-btn" (click)="loadMoreProducts()">
+            <i class="bi bi-arrow-down-circle"></i>
+            Load more products
+            <span class="load-more-count">({{ filteredProducts.length - visibleProducts.length }} remaining)</span>
+          </button>
+          }
+          }
+        </div>
+      </div>
+
+      <!-- ── STEP 3: ORDER SUMMARY ── -->
+      @if (orderItems.length > 0) {
+      <div class="po-panel po-summary-panel">
+        <div class="po-panel-label">
+          <i class="bi bi-receipt"></i>
+          Order Summary
+          <span class="po-item-count">{{ orderItems.length }} item{{ orderItems.length !== 1 ? 's' : '' }}</span>
+        </div>
+
+        <div class="summary-list">
+          @for (item of orderItems; track item.productId) {
+          <div class="summary-row">
+            <div class="summary-product">
+              <div class="summary-product-name">{{ productName(item.productId) }}</div>
+              <div class="summary-product-sku">{{ productSku(item.productId) }}</div>
+            </div>
+            <div class="summary-qty">
+              <button class="qty-btn" (click)="updateQty(item.productId, item.quantity - 1)"
+                [disabled]="item.quantity <= 1">−</button>
+              <input class="qty-val" type="number" [value]="item.quantity" min="1"
+                (change)="updateQty(item.productId, +$any($event.target).value)"
+                (blur)="updateQty(item.productId, +$any($event.target).value || 1)">
+              <button class="qty-btn" (click)="updateQty(item.productId, item.quantity + 1)">+</button>
+            </div>
+            <div class="summary-subtotal">₹{{ (item.quantity * productPrice(item.productId)) | number:'1.2-2' }}</div>
+            <button class="summary-remove" (click)="removeItem(item.productId)" title="Remove">
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+          }
+        </div>
+
+        <div class="summary-total-row">
+          <span>Total Order Value</span>
+          <strong class="summary-total-amount">₹{{ orderTotal | number:'1.2-2' }}</strong>
+        </div>
+      </div>
+      }
+      }
+
+    </div>
+
+    <!-- MODAL FOOTER -->
+    <div class="po-modal-footer">
+      <button class="btn btn-ghost" (click)="closeCreate()">Cancel</button>
+      <button class="btn btn-primary" (click)="createOrder()" [disabled]="orderItems.length === 0 || submitting()">
+        @if (submitting()) {
+        <span class="btn-spinner"></span> Placing Order...
+        } @else {
+        <i class="bi bi-send-fill"></i> Place Order
+        }
+      </button>
+    </div>
+  </div>
+</div>
+}
+
+
+<!-- ══════════════════════════════════════
+     DETAIL MODAL
+     ══════════════════════════════════════ -->
+@if (detailItem()) {
+<div class="modal-overlay" (click)="detailItem.set(null)">
+  <div class="detail-modal" (click)="$event.stopPropagation()">
+    <div class="po-modal-header">
+      <div class="po-modal-title">
+        <div class="po-modal-icon order-icon"><i class="bi bi-receipt"></i></div>
+        <div>
+          <h5>Order #{{ detailItem()!.id }}</h5>
+          <p>{{ detailItem()!.supplierName ?? ('Supplier #' + detailItem()!.supplierId) }}</p>
+        </div>
+      </div>
+      <button class="po-close-btn" (click)="detailItem.set(null)"><i class="bi bi-x-lg"></i></button>
+    </div>
+
+    <div class="detail-meta">
+      <div class="detail-meta-chip">
+        <span class="badge {{ statusBadge(detailItem()!.status) }}">{{ detailItem()!.status }}</span>
+      </div>
+      <div class="detail-meta-chip">
+        <i class="bi bi-box-seam"></i> {{ detailItem()!.items.length }} items
+      </div>
+      <div class="detail-meta-chip amount">
+        <i class="bi bi-currency-rupee"></i> {{ detailItem()!.totalAmount | number:'1.2-2' }}
+      </div>
+    </div>
+
+    <div class="po-modal-body" style="padding-top: 0">
+      <div class="detail-table-wrap">
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of detailItem()!.items; track i.productId) {
+            <tr>
+              <td>{{ i.productName }}</td>
+              <td>{{ i.quantity }}</td>
+              <td>₹{{ i.unitPrice | number:'1.2-2' }}</td>
+              <td><strong>₹{{ i.subTotal | number:'1.2-2' }}</strong></td>
+            </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3"><strong>Total</strong></td>
+              <td><strong class="text-primary">₹{{ detailItem()!.totalAmount | number:'1.2-2' }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="po-modal-footer">
+      <button class="btn btn-ghost" (click)="detailItem.set(null)">Close</button>
+      @if (detailItem()!.status === 'DELIVERED') {
+      <button class="btn btn-success" (click)="confirm(detailItem()!); detailItem.set(null)">
+        <i class="bi bi-check-lg"></i> Confirm Delivery
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}
+
+
+<!-- ══════════════════════════════════════
+     ORDER CONFIRMED POPUP
+     ══════════════════════════════════════ -->
+@if (confirmedOrder()) {
+<div class="modal-overlay" (click)="dismissConfirmation()">
+  <div class="confirm-modal" (click)="$event.stopPropagation()">
+    <div class="confirm-banner">
+      <div class="confirm-ring"><i class="bi bi-check-lg"></i></div>
+      <h4>Order Placed!</h4>
+      <p>Purchase #{{ confirmedOrder()!.id }} has been sent to {{ confirmedOrder()!.supplierName }}</p>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-row">
+        <span class="confirm-label"><i class="bi bi-building"></i> Supplier</span>
+        <span class="confirm-value">{{ confirmedOrder()!.supplierName ?? ('Supplier #' + confirmedOrder()!.supplierId)
+          }}</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label"><i class="bi bi-box-seam"></i> Items</span>
+        <span class="confirm-value">{{ confirmedOrder()!.items.length }}</span>
+      </div>
+      <div class="confirm-row">
+        <span class="confirm-label"><i class="bi bi-flag-fill"></i> Status</span>
+        <span class="badge {{ statusBadge(confirmedOrder()!.status) }}">{{ confirmedOrder()!.status }}</span>
+      </div>
+      <div class="confirm-total">
+        <span>Order Total</span>
+        <strong>₹{{ confirmedOrder()!.totalAmount | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+    <div class="po-modal-footer">
+      <button class="btn btn-primary" style="width:100%" (click)="dismissConfirmation()">
+        Done
+      </button>
+    </div>
+  </div>
+</div>
+}

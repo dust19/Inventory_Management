@@ -1,0 +1,329 @@
+<div class="page-enter" @fadeIn>
+    <div class="page-header">
+        <div class="page-header-left">
+            <h4>Staff</h4>
+            <p>Create staff profiles and assign them to managers</p>
+        </div>
+        <div class="page-header-right">
+            <button class="btn btn-primary" (click)="openCreate()">
+                <i class="bi bi-person-plus-fill"></i> Add Staff
+            </button>
+        </div>
+    </div>
+
+    @if (loading()) { <app-loader /> }
+    @else {
+    <div>
+        <app-table [hasData]="paged.items.length > 0" [showSearch]="true" [searchQuery]="search"
+            [searchPlaceholder]="'Search staff...'" (search)="search = $event; applyFilter()" [showSort]="true"
+            [sortValue]="selectedSort" [sortPlaceholder]="'Sort By'" [sortOptions]="sortOptions"
+            (sort)="selectedSort = $event; applyFilter()">
+            <ng-template #header>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Manager</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </ng-template>
+            <ng-template #empty>
+                <div class="empty-state"><i class="bi bi-person-lines-fill"></i>
+                    <p>No staff yet</p>
+                </div>
+            </ng-template>
+            <ng-template #body>
+                @for (s of paged.items; track s.id) {
+                <tr>
+                    <td><span class="row-id">#{{ s.id }}</span></td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar avatar-sm" [style.background]="getAvatarGradient(s.userName)">
+                                {{ initials(s.userName) }}
+                            </div>
+                            <div class="user-name-row">
+                                <span>{{ s.userName }}</span>
+
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ s.userEmail }}</td>
+                    <td>{{ s.managerName || '—' }}</td>
+                    <td>
+                        <span class="badge {{ s.active ? 'badge-success' : 'badge-danger' }}">
+                            {{ s.active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px">
+                            <button class="btn btn-icon btn-ghost" (click)="toggleActive(s)"
+                                [title]="s.active ? 'Deactivate' : 'Activate'">
+                                <i
+                                    class="bi {{ s.active ? 'bi-toggle-on text-success' : 'bi-toggle-off text-danger' }} fs-3"></i>
+                            </button>
+                            <button class="btn btn-sm btn-primary" (click)="openSales(s)">
+                                <i class="bi bi-graph-up"></i>
+                                Sales
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" (click)="openAssign(s)"
+                                title="Assign Manager">
+                                <i class="bi bi-person-check-fill"></i> Assign
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                }
+            </ng-template>
+        </app-table>
+        <app-paginator [totalItems]="paged.totalItems" [totalPages]="paged.totalPages" [currentPage]="paged.currentPage"
+            [pageSize]="paged.pageSize" (pageChange)="page.set($event)" (pageSizeChange)="onPageSize($event)">
+        </app-paginator>
+    </div>
+    }
+</div>
+
+<!-- Create Modal -->
+@if (showCreate()) {
+<div class="modal-overlay" (click)="showCreate.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h5 class="modal-title">Create Staff Profile</h5>
+            <button class="modal-close" (click)="showCreate.set(false)">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">User (ROLE_STAFF)</label>
+                <select class="form-select" [(ngModel)]="createForm.userId">
+                    <option [value]="0">-- Select User --</option>
+                    @for (u of availableUsers(); track u.id) {
+                    <option [value]="u.id">{{ u.name }} ({{ u.email }})</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Assign Manager (optional)</label>
+                <select class="form-select" [(ngModel)]="createForm.managerId">
+                    <option [value]="0">-- Assign Later --</option>
+                    @for (m of managers(); track m.id) {
+                    <option [value]="m.id">{{ m.userName }}</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-secondary" (click)="showCreate.set(false)">Cancel</button>
+            <button class="btn btn-primary" (click)="create()">Create</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- Assign Manager Modal -->
+@if (assignTarget()) {
+<div class="modal-overlay" (click)="assignTarget.set(null)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h5 class="modal-title">Assign Manager — {{ assignTarget()!.userName }}</h5>
+            <button class="modal-close" (click)="assignTarget.set(null)">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Manager</label>
+                <select class="form-select" [(ngModel)]="selectedManagerId">
+                    <option [value]="0">-- Select Manager --</option>
+                    @for (m of managers(); track m.id) {
+                    <option [value]="m.id">{{ m.userName }} — {{ m.department }}</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline-secondary" (click)="assignTarget.set(null)">Cancel</button>
+            <button class="btn btn-primary" (click)="saveAssign()">Save</button>
+        </div>
+    </div>
+</div>
+}
+@if (selectedStaff()) {
+<div class="modal-overlay" (click)="closeSales()">
+
+    <div class="modal-box modal-lg" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+
+            <div class="sales-user">
+                <div class="sales-avatar">
+                    {{ initials(selectedStaff()!.userName) }}
+                </div>
+
+                <div class="sales-user-info">
+                    <div class="sales-user-name">
+                        {{ selectedStaff()!.userName }}
+                    </div>
+
+                    <div class="sales-user-email">
+                        {{ selectedStaff()!.userEmail }}
+                    </div>
+                </div>
+            </div>
+
+            <button class="modal-close" (click)="closeSales()">
+                ×
+            </button>
+
+        </div>
+
+        <div class="modal-body">
+
+            <!-- Filters -->
+            <div class="sales-filter-bar">
+
+                <button type="button" class="filter-pill" [class.active]="dateRange() === 'today'"
+                    (click)="setRange('today')">
+                    Today
+                </button>
+
+                <button type="button" class="filter-pill" [class.active]="dateRange() === 'last_week'"
+                    (click)="setRange('last_week')">
+                    Last 7 Days
+                </button>
+
+                <button type="button" class="filter-pill" [class.active]="dateRange() === 'custom'"
+                    (click)="setRange('custom')">
+                    Custom Range
+                </button>
+
+            </div>
+
+            @if (dateRange() === 'custom') {
+            <div class="sales-date-range">
+
+                <div class="form-group">
+                    <label class="form-label">From</label>
+                    <input type="date" class="form-control" [(ngModel)]="customFrom">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">To</label>
+                    <input type="date" class="form-control" [(ngModel)]="customTo">
+                </div>
+
+            </div>
+            }
+
+            <!-- Summary -->
+            <div class="sales-summary">
+
+                <div class="summary-card">
+                    <div class="summary-title">
+                        Total Sales
+                    </div>
+
+                    <div class="summary-number">
+                        {{ filteredSales().length }}
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-title">
+                        Revenue
+                    </div>
+
+                    <div class="summary-number">
+                        ₹{{ popupRevenue() | number:'1.2-2' }}
+                    </div>
+                </div>
+
+            </div>
+
+            @if (filteredSales().length === 0) {
+
+            <div class="sales-empty">
+                <i class="bi bi-receipt-cutoff"></i>
+                <p>No sales found for selected period</p>
+            </div>
+
+            } @else {
+
+            <div class="sales-table-wrapper">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Payment</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @for (sale of filteredSales(); track sale.id) {
+
+                        <tr>
+
+                            <td>
+                                <strong>#{{ sale.id }}</strong>
+                            </td>
+
+                            <td>
+                                <div class="customer-block">
+                                    <span class="customer-name">
+                                        {{ sale.customerName }}
+                                    </span>
+
+                                    <span class="customer-phone">
+                                        {{ sale.customerPhone }}
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                {{ sale.items.length }}
+                            </td>
+
+                            <td>
+                                <span class="sale-amount">
+                                    ₹{{ sale.totalAmount | number:'1.2-2' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="badge {{ paymentModeBadge(sale.paymentMode) }}">
+                                    {{ sale.paymentMode }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ sale.saleDate | date:'MMM d, y, h:mm a' }}
+                            </td>
+
+                        </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            }
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" (click)="closeSales()">
+                Close
+            </button>
+        </div>
+
+    </div>
+
+</div>
+}
